@@ -1,0 +1,28 @@
+bootJar.enabled = true
+jar.enabled = false
+
+dependencies {
+    // 도메인 모듈
+    implementation project(':core:domain-user')
+    implementation project(':core:domain-vote')
+    implementation project(':core:core-enum')
+
+    // 지원 모듈
+    implementation project(':support:monitoring')
+    implementation project(':support:logging')
+    implementation project(':support:security')
+    implementation project(':support:event')
+
+    // 스토리지
+    implementation project(':storage:db-core')
+
+    // 외부 클라이언트
+    implementation project(':clients:client-example')
+
+    // 테스트 - REST Docs
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
+    testImplementation 'io.rest-assured:spring-mock-mvc'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
