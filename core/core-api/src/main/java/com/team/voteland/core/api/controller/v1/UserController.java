@@ -1,4 +1,4 @@
-package com.team.voteland.domain.user.api;
+package com.team.voteland.core.api.controller.v1;
 
 import com.team.voteland.domain.user.api.v1.request.LoginRequest;
 import com.team.voteland.domain.user.api.v1.response.LoginResponse;

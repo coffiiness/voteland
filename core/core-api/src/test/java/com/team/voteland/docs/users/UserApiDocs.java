@@ -19,7 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 
 import com.team.voteland.docs.RestDocsTest;
-import com.team.voteland.domain.user.api.UserController;
+import com.team.voteland.core.api.controller.v1.UserController;
 import com.team.voteland.domain.user.api.v1.request.LoginRequest;
 import com.team.voteland.domain.user.api.v1.request.SignUpRequest;
 import com.team.voteland.domain.user.domain.User;
