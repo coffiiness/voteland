@@ -1,10 +1,7 @@
 package com.team.voteland.storage.db.core;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import com.team.voteland.core.enums.EntityStatus;
+import jakarta.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,6 +15,9 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private EntityStatus status = EntityStatus.ACTIVE;
+
     @CreationTimestamp
     @Column
     private LocalDateTime createdAt;
@@ -28,6 +28,18 @@ public abstract class BaseEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public void active() {
+        status = EntityStatus.ACTIVE;
+    }
+
+    public boolean isActive() {
+        return status == EntityStatus.ACTIVE;
+    }
+
+    public void deleted() {
+        status = EntityStatus.DELETED;
     }
 
     public LocalDateTime getCreatedAt() {
