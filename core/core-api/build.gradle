@@ -16,7 +16,7 @@ dependencies {
     // 스토리지
     implementation project(':storage:db-core')
 
-    // 외부 클라이언트
+    // 외부 클라이언트 (MSA)
     implementation project(':clients:client-example')
 
     // 테스트 - REST Docs
@@ -24,5 +24,7 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
     testImplementation 'io.rest-assured:spring-mock-mvc'
 
+    // Spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
