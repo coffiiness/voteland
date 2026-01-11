@@ -5,6 +5,7 @@ pipeline {
         DISCORD_WEBHOOK = credentials('discord-webhook-url')
     }
 
+    //
     stages {
         stage('Checkout') {
             steps {
