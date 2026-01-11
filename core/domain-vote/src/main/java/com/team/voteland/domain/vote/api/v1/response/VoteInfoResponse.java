@@ -8,27 +8,11 @@ import com.team.voteland.storage.db.core.vote.VoteEntity;
 
 import java.time.LocalDateTime;
 
-public record VoteInfoResponse(
-        Long id,
-        String title,
-        String description,
-        VoteType voteType,
-        Integer optionCount,
-        Integer voterCount,
-        VoteStatus voteStatus,
-        LocalDateTime createdAt
-        ) {
+public record VoteInfoResponse(Long id, String title, String description, VoteType voteType, Integer optionCount,
+        Integer voterCount, VoteStatus voteStatus, LocalDateTime createdAt) {
 
     public static VoteInfoResponse from(VoteInfo voteInfo) {
-        return new VoteInfoResponse(
-                voteInfo.id(),
-                voteInfo.title(),
-                voteInfo.description(),
-                voteInfo.voteType(),
-                voteInfo.optionCount(),
-                voteInfo.voterCount(),
-                voteInfo.voteStatus(),
-                voteInfo.createdAt()
-        );
+        return new VoteInfoResponse(voteInfo.id(), voteInfo.title(), voteInfo.description(), voteInfo.voteType(),
+                voteInfo.optionCount(), voteInfo.voterCount(), voteInfo.voteStatus(), voteInfo.createdAt());
     }
 }

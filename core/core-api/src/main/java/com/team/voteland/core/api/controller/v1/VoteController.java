@@ -17,6 +17,7 @@ import java.util.List;
 
 @RestController
 public class VoteController {
+
     private final VoteService voteService;
 
     @Autowired
@@ -25,11 +26,10 @@ public class VoteController {
     }
 
     @PostMapping("/api/v1/votes")
-    public ApiResponse<?> createVote(
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody CreateVoteRequest request
-    ) {
-        voteService.createVote(securityUser.userId(), request.title(), request.description(), request.voteType(), request.options(), request.deadline());
+    public ApiResponse<?> createVote(@AuthenticationPrincipal SecurityUser securityUser,
+            @RequestBody CreateVoteRequest request) {
+        voteService.createVote(securityUser.userId(), request.title(), request.description(), request.voteType(),
+                request.options(), request.deadline());
         return ApiResponse.success();
     }
 
@@ -39,4 +39,5 @@ public class VoteController {
         List<VoteInfoResponse> response = votes.stream().map(VoteInfoResponse::from).toList();
         return ApiResponse.success(response);
     }
+
 }

@@ -7,12 +7,8 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(
-        name = "vote_options",
-        indexes = {
-                @Index(name = "idx_vote_options", columnList = "vote_id, sequence", unique = true)
-        }
-)
+@Table(name = "vote_options",
+        indexes = { @Index(name = "idx_vote_options", columnList = "vote_id, sequence", unique = true) })
 public class VoteOptionEntity extends BaseEntity {
 
     @Column(name = "vote_id", nullable = false)
@@ -51,4 +47,5 @@ public class VoteOptionEntity extends BaseEntity {
     public Integer getVoteCount() {
         return voteCount;
     }
+
 }

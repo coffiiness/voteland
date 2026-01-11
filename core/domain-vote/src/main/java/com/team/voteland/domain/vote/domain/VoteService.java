@@ -12,12 +12,16 @@ import java.util.List;
 
 @Service
 public class VoteService {
+
     private final VoteRepository voteRepository;
+
     private final VoteOptionRepository voteOptionRepository;
+
     private final VoteRecordRepository voteRecordRepository;
 
     @Autowired
-    public VoteService(VoteRepository voteRepository, VoteOptionRepository voteOptionRepository, VoteRecordRepository voteRecordRepository) {
+    public VoteService(VoteRepository voteRepository, VoteOptionRepository voteOptionRepository,
+            VoteRecordRepository voteRecordRepository) {
         this.voteRepository = voteRepository;
         this.voteOptionRepository = voteOptionRepository;
         this.voteRecordRepository = voteRecordRepository;
@@ -26,13 +30,15 @@ public class VoteService {
     /**
      * 투표 생성
      */
-    public void createVote(Long userId, String title, String description, VoteType voteType, List<String> options, LocalDateTime deadline) {
+    public void createVote(Long userId, String title, String description, VoteType voteType, List<String> options,
+            LocalDateTime deadline) {
         VoteEntity voteEntity = new VoteEntity(userId, title, description, voteType, deadline);
         voteRepository.save(voteEntity);
 
         List<VoteOptionEntity> voteOptions = new ArrayList<>();
         for (int sequence = 0; sequence < options.size(); sequence++) {
-            VoteOptionEntity voteOptionEntity = new VoteOptionEntity(voteEntity.getId(), options.get(sequence), sequence);
+            VoteOptionEntity voteOptionEntity = new VoteOptionEntity(voteEntity.getId(), options.get(sequence),
+                    sequence);
             voteOptions.add(voteOptionEntity);
         }
         voteOptionRepository.saveAll(voteOptions);
@@ -42,13 +48,10 @@ public class VoteService {
      * 투표 조회
      */
     public List<VoteInfo> getVoteInfos() {
-        List<Vote> votes =
-                voteRepository.findAll().stream()
-                        .map(Vote::from)
-                        .toList();
+        List<Vote> votes = voteRepository.findAll().stream().map(Vote::from).toList();
 
         List<VoteInfo> voteInfos = new ArrayList<>();
-        for(Vote vote : votes) {
+        for (Vote vote : votes) {
             long optionCount = voteOptionRepository.countByVoteId(vote.id());
             long voterCount = voteRecordRepository.countByVoteId(vote.id());
 
@@ -58,4 +61,5 @@ public class VoteService {
 
         return voteInfos;
     }
+
 }

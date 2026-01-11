@@ -8,12 +8,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "votes",
-        indexes = {
-                @Index(name = "idx_vote", columnList = "user_id")
-        }
-)
+@Table(name = "votes", indexes = { @Index(name = "idx_vote", columnList = "user_id") })
 public class VoteEntity extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
@@ -66,4 +61,5 @@ public class VoteEntity extends BaseEntity {
     public VoteStatus getVoteStatus() {
         return LocalDateTime.now().isBefore(deadline) ? VoteStatus.OPEN : VoteStatus.CLOSED;
     }
+
 }
