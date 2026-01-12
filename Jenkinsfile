@@ -21,11 +21,8 @@ pipeline {
         }
 
         stage('Frontend Build') {
-            agent {
-                docker {
-                    image 'node:20-alpine'
-                    reuseNode true
-                }
+            tools {
+                    nodejs 'NodeJS-20'
             }
             steps {
                 dir('frontend') {
