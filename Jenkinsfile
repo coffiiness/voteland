@@ -3,9 +3,10 @@ pipeline {
 
     environment {
         DISCORD_WEBHOOK = credentials('discord-webhook-url')
+        DOCKER_HUB = credentials('docker-hub-credentials')
+        DOCKER_USERNAME = "${DOCKER_HUB_USR}"
     }
 
-    //
     stages {
         stage('Checkout') {
             steps {
@@ -22,7 +23,7 @@ pipeline {
 
         stage('Frontend Build') {
             tools {
-                    nodejs 'NodeJS-20'
+                nodejs 'NodeJS-20'
             }
             steps {
                 dir('frontend') {
@@ -39,6 +40,25 @@ pipeline {
             post {
                 always {
                     junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
+                }
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
+
+                sh "docker build -t ${DOCKER_USERNAME}/voteland-backend:latest ."
+                sh "docker push ${DOCKER_USERNAME}/voteland-backend:latest"
+
+                dir('frontend') {
+                    sh "docker build -t ${DOCKER_USERNAME}/voteland-frontend:latest ."
+                    sh "docker push ${DOCKER_USERNAME}/voteland-frontend:latest"
+                }
+            }
+            post {
+                always {
+                    sh 'docker logout'
                 }
             }
         }
