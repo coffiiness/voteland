@@ -28,3 +28,27 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
+
+def jacocoTargetProjects = rootProject.subprojects.findAll { subproject ->
+    !['tests', 'support'].any { excluded -> subproject.path.contains(excluded) }
+}
+
+tasks.register('jacocoMergedReport', JacocoReport) {
+    group = 'verification'
+    description = 'Generates an aggregate JaCoCo report from all subprojects'
+
+    dependsOn jacocoTargetProjects.collect { it.tasks.named('test') }
+    dependsOn jacocoTargetProjects.collect { it.tasks.named('jacocoTestReport') }
+
+    additionalSourceDirs.from(files(jacocoTargetProjects*.sourceSets.main*.allSource.srcDirs))
+    sourceDirectories.from(files(jacocoTargetProjects*.sourceSets.main*.allSource.srcDirs))
+    classDirectories.from(files(jacocoTargetProjects*.sourceSets.main*.output))
+    executionData.from(fileTree(rootProject.projectDir).include('**/build/jacoco/test.exec'))
+
+    reports {
+        xml.required = true
+        html.required = true
+        xml.outputLocation = layout.buildDirectory.file("reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml")
+        html.outputLocation = layout.buildDirectory.dir("reports/jacoco/jacocoMergedReport/html")
+    }
+}
