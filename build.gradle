@@ -4,6 +4,8 @@ plugins {
     id 'io.spring.dependency-management'
     id 'io.spring.javaformat' apply(false)
     id 'org.asciidoctor.jvm.convert' apply(false)
+    id 'org.sonarqube' version "${sonarqubeVersion}"
+    id 'jacoco'
 }
 
 apply from: 'lint.gradle'
@@ -23,7 +25,12 @@ subprojects {
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.asciidoctor.jvm.convert'
-    
+    apply plugin: 'jacoco'
+
+    jacoco {
+        toolVersion = "${jacocoVersion}"
+    }
+
     dependencyManagement {
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudDependenciesVersion}"
@@ -41,21 +48,28 @@ subprojects {
         useJUnitPlatform {
             excludeTags('develop', 'restdocs')
         }
+        finalizedBy jacocoTestReport
     }
 
-    tasks.register('unitTest', Test) {
-        group = 'verification'
-        useJUnitPlatform {
-            excludeTags('develop', 'context', 'restdocs')
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            xml.required = true
+            html.required = true
         }
     }
 
-    tasks.register('contextTest', Test) {
-        group = 'verification'
-        useJUnitPlatform {
-            includeTags('context')
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                limit {
+                    minimum = 0.70
+                }
+            }
         }
     }
+
+    check.dependsOn jacocoTestCoverageVerification
 
     tasks.register('restDocsTest', Test) {
         group = 'verification'
@@ -74,4 +88,34 @@ subprojects {
     tasks.named('asciidoctor') {
         dependsOn restDocsTest
     }
+}
+
+sonar {
+    properties {
+        property 'sonar.projectKey', 'coffiiness_voteland'
+        property 'sonar.organization', 'coffiiness'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+
+        property 'sonar.coverage.jacoco.xmlReportPaths',
+                "${rootProject.projectDir}/core/core-api/build/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
+
+        property 'sonar.exclusions', [
+                '**/config/**',
+                '**/entity/**',
+                '**/*Application.java'
+        ].join(',')
+
+        property 'sonar.coverage.exclusions', [
+                '**/config/**',
+                '**/entity/**',
+                '**/*Application.java',
+                '**/*Exception.java',
+                '**/*Request.java',
+                '**/*Response.java'
+        ].join(',')
+    }
+}
+
+tasks.sonar {
+    dependsOn ':core:core-api:jacocoMergedReport'
 }
