@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DISCORD_WEBHOOK = credentials('discord-webhook-url')
         DOCKER_HUB = credentials('docker-hub-credentials')
         DOCKER_USERNAME = "${DOCKER_HUB_USR}"
     }
@@ -66,47 +65,41 @@ pipeline {
 
     post {
         success {
-            node('') {
-                script {
-                    sh """
-                        curl -X POST -H 'Content-Type: application/json' -d '{
-                            "embeds": [{
-                                "title": "빌드 성공",
-                                "color": 3066993,
-                                "fields": [
-                                    {"name": "Job", "value": "${env.JOB_NAME}", "inline": true},
-                                    {"name": "Branch", "value": "${env.BRANCH_NAME}", "inline": true},
-                                    {"name": "Build", "value": "#${env.BUILD_NUMBER}", "inline": true}
-                                ]
-                            }]
-                        }' \${DISCORD_WEBHOOK}
-                    """
-                }
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                sh """
+                    curl -X POST -H 'Content-Type: application/json' -d '{
+                        "embeds": [{
+                            "title": "빌드 성공 ✅",
+                            "color": 3066993,
+                            "fields": [
+                                {"name": "Job", "value": "${env.JOB_NAME}", "inline": true},
+                                {"name": "Branch", "value": "${env.BRANCH_NAME}", "inline": true},
+                                {"name": "Build", "value": "#${env.BUILD_NUMBER}", "inline": true}
+                            ]
+                        }]
+                    }' ${DISCORD_WEBHOOK}
+                """
             }
         }
         failure {
-            node('') {
-                script {
-                    sh """
-                        curl -X POST -H 'Content-Type: application/json' -d '{
-                            "embeds": [{
-                                "title": "빌드 실패",
-                                "color": 15158332,
-                                "fields": [
-                                    {"name": "Job", "value": "${env.JOB_NAME}", "inline": true},
-                                    {"name": "Branch", "value": "${env.BRANCH_NAME}", "inline": true},
-                                    {"name": "링크", "value": "[로그 확인](${env.BUILD_URL})"}
-                                ]
-                            }]
-                        }' \${DISCORD_WEBHOOK}
-                    """
-                }
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                sh """
+                    curl -X POST -H 'Content-Type: application/json' -d '{
+                        "embeds": [{
+                            "title": "빌드 실패 ❌",
+                            "color": 15158332,
+                            "fields": [
+                                {"name": "Job", "value": "${env.JOB_NAME}", "inline": true},
+                                {"name": "Branch", "value": "${env.BRANCH_NAME}", "inline": true},
+                                {"name": "링크", "value": "[로그 확인](${env.BUILD_URL})"}
+                            ]
+                        }]
+                    }' ${DISCORD_WEBHOOK}
+                """
             }
         }
         always {
-            node('') {
-                cleanWs()
-            }
+            cleanWs()
         }
     }
 }
