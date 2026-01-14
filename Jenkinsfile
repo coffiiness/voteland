@@ -45,17 +45,19 @@ pipeline {
 
         stage('Docker Build & Push') {
             steps {
-                sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
+                script {
+                    sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
 
-                // dev 브랜치일 때 버전 태그(dev-숫자)를 같이 생성
-                sh "docker build -t ${DOCKER_USERNAME}/voteland-backend:latest ."
-                sh "docker tag ${DOCKER_USERNAME}/voteland-backend:latest ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}"
-                sh "docker push ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}"
+                    // dev 브랜치일 때만 dev-숫자 태그로 빌드 및 푸시
+                    if (env.BRANCH_NAME == 'dev') {
+                        sh "docker build -t ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER} ."
+                        sh "docker push ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}"
 
-                dir('frontend') {
-                    sh "docker build -t ${DOCKER_USERNAME}/voteland-frontend:latest ."
-                    sh "docker tag ${DOCKER_USERNAME}/voteland-frontend:latest ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}"
-                    sh "docker push ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}"
+                        dir('frontend') {
+                            sh "docker build -t ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER} ."
+                            sh "docker push ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}"
+                        }
+                    }
                 }
             }
             post {
@@ -64,7 +66,6 @@ pipeline {
                 }
             }
         }
-    }
 
         stage('Update K8s Manifest') {
             when {
@@ -72,28 +73,36 @@ pipeline {
             }
             steps {
                 script {
-                    sh "git config --global user.email 'jenkins@voteland.com'"
-                    sh "git config --global user.name 'Jenkins Bot'"
-
                     withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
+                        sh 'rm -rf k8s-repo || true'
                         sh "git clone https://${GIT_USER}:${GIT_PWD}@github.com/coffiiness/voteland-k8s-repo.git k8s-repo"
                     }
 
                     dir('k8s-repo') {
+                        sh "git config user.email 'jenkins@voteland.com'"
+                        sh "git config user.name 'Jenkins Bot'"
+
                         sh "git checkout dev"
 
-                        // (:dev 태그를 :dev-빌드번호 로 변경)
                         sh "sed -i 's|image: .*/voteland-backend:.*|image: ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}|g' k8s/backend/deployment.yaml"
+
                         sh "sed -i 's|image: .*/voteland-frontend:.*|image: ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}|g' k8s/frontend/deployment.yaml"
 
-                        sh "git add ."
-                        sh "git commit -m 'Update image tag to dev-${env.BUILD_NUMBER}'"
-                        sh "git push origin dev"
+                        // 변경사항 커밋 & 푸시
+                        sh '''
+                            if [ -n "$(git status --porcelain)" ]; then
+                                git add .
+                                git commit -m "Update image tag to dev-${BUILD_NUMBER}"
+                                git push origin dev
+                            else
+                                echo "No changes to commit"
+                            fi
+                        '''
                     }
                 }
             }
         }
-
+    }
     post {
         success {
             node('') {
@@ -106,7 +115,7 @@ pipeline {
                                 "fields": [
                                     {"name": "Job", "value": "''' + env.JOB_NAME + '''", "inline": true},
                                     {"name": "Branch", "value": "''' + env.BRANCH_NAME + '''", "inline": true},
-                                    {"name": "Build", "value": "#''' + env.BUILD_NUMBER + '''", "inline": true}
+                                    {"name": "Image Tag", "value": "dev-''' + env.BUILD_NUMBER + '''", "inline": true}
                                 ]
                             }]
                         }' "$DISCORD_WEBHOOK"
@@ -125,7 +134,7 @@ pipeline {
                                 "fields": [
                                     {"name": "Job", "value": "''' + env.JOB_NAME + '''", "inline": true},
                                     {"name": "Branch", "value": "''' + env.BRANCH_NAME + '''", "inline": true},
-                                    {"name": "링크", "value": "[로그 확인](''' + env.BUILD_URL + ''')"}
+                                    {"name": "Link", "value": "[로그 확인](''' + env.BUILD_URL + ''')"}
                                 ]
                             }]
                         }' "$DISCORD_WEBHOOK"
