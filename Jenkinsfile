@@ -73,7 +73,7 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'coffiiness', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
                         sh 'rm -rf k8s-repo || true'
                         sh "git clone https://${GIT_USER}:${GIT_PWD}@github.com/coffiiness/voteland-k8s-repo.git k8s-repo"
                     }
