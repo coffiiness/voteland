@@ -47,12 +47,15 @@ pipeline {
             steps {
                 sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
 
+                // dev 브랜치일 때 버전 태그(dev-숫자)를 같이 생성
                 sh "docker build -t ${DOCKER_USERNAME}/voteland-backend:latest ."
-                sh "docker push ${DOCKER_USERNAME}/voteland-backend:latest"
+                sh "docker tag ${DOCKER_USERNAME}/voteland-backend:latest ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}"
+                sh "docker push ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}"
 
                 dir('frontend') {
                     sh "docker build -t ${DOCKER_USERNAME}/voteland-frontend:latest ."
-                    sh "docker push ${DOCKER_USERNAME}/voteland-frontend:latest"
+                    sh "docker tag ${DOCKER_USERNAME}/voteland-frontend:latest ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}"
                 }
             }
             post {
@@ -63,6 +66,34 @@ pipeline {
         }
     }
 
+        stage('Update K8s Manifest') {
+                    when {
+                        branch 'dev'
+                    }
+                    steps {
+                        script {
+                            sh "git config --global user.email 'jenkins@voteland.com'"
+                            sh "git config --global user.name 'Jenkins Bot'"
+
+                            withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
+                                sh "git clone https://${GIT_USER}:${GIT_PWD}@github.com/coffiiness/voteland-k8s-repo.git k8s-repo"
+                            }
+
+                            dir('k8s-repo') {
+                                sh "git checkout dev"
+
+                                // (:dev 태그를 :dev-빌드번호 로 변경)
+                                sh "sed -i 's|image: .*/voteland-backend:.*|image: ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}|g' k8s/backend/deployment.yaml"
+                                sh "sed -i 's|image: .*/voteland-frontend:.*|image: ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}|g' k8s/frontend/deployment.yaml"
+
+                                sh "git add ."
+                                sh "git commit -m 'Update image tag to dev-${env.BUILD_NUMBER}'"
+                                sh "git push origin dev"
+                            }
+                        }
+                    }
+                }
+
     post {
         success {
             node('') {
@@ -70,7 +101,7 @@ pipeline {
                     sh '''
                         curl -X POST -H "Content-Type: application/json" -d '{
                             "embeds": [{
-                                "title": "빌드 성공 ✅",
+                                "title": "빌드 & 배포 업데이트 성공 ✅",
                                 "color": 3066993,
                                 "fields": [
                                     {"name": "Job", "value": "''' + env.JOB_NAME + '''", "inline": true},
