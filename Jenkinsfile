@@ -67,32 +67,32 @@ pipeline {
     }
 
         stage('Update K8s Manifest') {
-                    when {
-                        branch 'dev'
+            when {
+                branch 'dev'
+            }
+            steps {
+                script {
+                    sh "git config --global user.email 'jenkins@voteland.com'"
+                    sh "git config --global user.name 'Jenkins Bot'"
+
+                    withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
+                        sh "git clone https://${GIT_USER}:${GIT_PWD}@github.com/coffiiness/voteland-k8s-repo.git k8s-repo"
                     }
-                    steps {
-                        script {
-                            sh "git config user.email 'jenkins@voteland.com'"
-                            sh "git config user.name 'Jenkins Bot'"
 
-                            withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PWD')]) {
-                                sh "git clone https://${GIT_USER}:${GIT_PWD}@github.com/coffiiness/voteland-k8s-repo.git k8s-repo"
-                            }
+                    dir('k8s-repo') {
+                        sh "git checkout dev"
 
-                            dir('k8s-repo') {
-                                sh "git checkout dev"
+                        // (:dev 태그를 :dev-빌드번호 로 변경)
+                        sh "sed -i 's|image: .*/voteland-backend:.*|image: ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}|g' k8s/backend/deployment.yaml"
+                        sh "sed -i 's|image: .*/voteland-frontend:.*|image: ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}|g' k8s/frontend/deployment.yaml"
 
-                                // (:dev 태그를 :dev-빌드번호 로 변경)
-                                sh "sed -i 's|image: .*/voteland-backend:.*|image: ${DOCKER_USERNAME}/voteland-backend:dev-${env.BUILD_NUMBER}|g' k8s/backend/deployment.yaml"
-                                sh "sed -i 's|image: .*/voteland-frontend:.*|image: ${DOCKER_USERNAME}/voteland-frontend:dev-${env.BUILD_NUMBER}|g' k8s/frontend/deployment.yaml"
-
-                                sh "git add ."
-                                sh "git diff --staged --quiet || git commit -m 'Update image tag to dev-${env.BUILD_NUMBER}'"
-                                sh "git push origin dev"
-                            }
-                        }
+                        sh "git add ."
+                        sh "git commit -m 'Update image tag to dev-${env.BUILD_NUMBER}'"
+                        sh "git push origin dev"
                     }
                 }
+            }
+        }
 
     post {
         success {
