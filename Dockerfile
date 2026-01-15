@@ -12,5 +12,6 @@ RUN chmod +x gradlew && ./gradlew :core:core-api:bootJar -x test
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/core/core-api/build/libs/*.jar app.jar
+COPY .env .env
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "export $(cat .env | xargs) && java -jar app.jar"]
