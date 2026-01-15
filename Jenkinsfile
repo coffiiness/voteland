@@ -14,11 +14,11 @@ pipeline {
         }
 
         stage('Backend Build') {
-          steps {
-              withCredentials([string(credentialsId: 'env-file-base64', variable: 'ENV_BASE64')]) {
-                  sh 'echo $ENV_BASE64 | base64 -d > .env'
-                  sh 'chmod +x gradlew'
-                  sh './gradlew clean build -x test'
+            steps {
+                withCredentials([string(credentialsId: 'env-file-base64', variable: 'ENV_BASE64')]) {
+                    sh 'echo $ENV_BASE64 | base64 -d > .env'
+                    sh 'chmod +x gradlew'
+                    sh './gradlew clean build -x test'
                 }
             }
         }
