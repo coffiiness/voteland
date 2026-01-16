@@ -1,15 +1,15 @@
 package com.team.voteland.storage.db.core.vote;
 
 import com.team.voteland.storage.db.core.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "vote_options",
         indexes = { @Index(name = "idx_vote_options", columnList = "vote_id, sequence", unique = true) })
 public class VoteOptionEntity extends BaseEntity {
+
+    @Version  // ← 이 줄 추가
+    private Long version;  // ← 이 줄 추가
 
     @Column(name = "vote_id", nullable = false)
     private Long voteId;
@@ -48,4 +48,17 @@ public class VoteOptionEntity extends BaseEntity {
         return voteCount;
     }
 
+    public Long getVersion() {
+        return version;
+    }
+
+    public void increaseVoteCount() {
+        this.voteCount++;
+    }
+
+    public void decreaseVoteCount() {
+        if (this.voteCount > 0) {
+            this.voteCount--;
+        }
+    }
 }
