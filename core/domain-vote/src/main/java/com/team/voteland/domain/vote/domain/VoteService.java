@@ -8,10 +8,14 @@ import com.team.voteland.domain.vote.api.v1.response.VoteItemResponse;
 import com.team.voteland.storage.db.core.vote.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class VoteService {
@@ -24,7 +28,7 @@ public class VoteService {
 
     @Autowired
     public VoteService(VoteRepository voteRepository, VoteOptionRepository voteOptionRepository,
-            VoteRecordRepository voteRecordRepository) {
+                       VoteRecordRepository voteRecordRepository) {
         this.voteRepository = voteRepository;
         this.voteOptionRepository = voteOptionRepository;
         this.voteRecordRepository = voteRecordRepository;
@@ -34,7 +38,7 @@ public class VoteService {
      * 투표 생성
      */
     public void createVote(Long userId, String title, String description, VoteType voteType, List<String> options,
-            LocalDateTime deadline) {
+                           LocalDateTime deadline) {
         VoteEntity voteEntity = new VoteEntity(userId, title, description, voteType, deadline);
         voteRepository.save(voteEntity);
 
