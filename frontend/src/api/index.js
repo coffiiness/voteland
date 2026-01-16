@@ -59,8 +59,8 @@ export const voteApi = {
   createVote(data) {
     return api.post('/votes', data)
   },
-  submitVote(id, optionId) {
-    return api.post(`/votes/${id}/vote`, { optionId })
+  submitVote(id, itemIds) {
+    return api.post(`/votes/${id}/submit`, { itemIds })
   },
   getVoteResult(id) {
     return api.get(`/votes/${id}/result`)
