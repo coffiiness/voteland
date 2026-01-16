@@ -39,8 +39,7 @@ public class VoteController {
     }
 
     @GetMapping("/api/v1/votes/{voteId}")
-    public ApiResponse<VoteDetailResponse> getVoteDetail(
-            @PathVariable Long voteId) {
+    public ApiResponse<VoteDetailResponse> getVoteDetail(@PathVariable Long voteId) {
         VoteDetailResponse response = voteService.getVoteDetail(voteId);
         return ApiResponse.success(response);
     }

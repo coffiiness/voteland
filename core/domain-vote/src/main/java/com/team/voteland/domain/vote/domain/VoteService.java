@@ -71,7 +71,7 @@ public class VoteService {
     // 투표 정보 조회 및 도메인 객체(Vote)로 변환
     public VoteDetailResponse getVoteDetail(Long voteId) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new IllegalArgumentException("Vote not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Vote not found"));
         Vote vote = Vote.from(voteEntity);
 
         // 투표 옵션 조회
@@ -90,22 +90,12 @@ public class VoteService {
 
         // VoteOptionEntity를 DTO로 변환
         List<VoteItemResponse> items = voteOptions.stream()
-                .map(option -> new VoteItemResponse(option.getId(),
-                        option.getContent()))
-                .toList();
+            .map(option -> new VoteItemResponse(option.getId(), option.getContent()))
+            .toList();
 
         // 최종 상세 조회 응답 객체 생성 및 반환
-        return new VoteDetailResponse(
-                vote.id(),
-                currentStatus,
-                vote.title(),
-                vote.description(),
-                vote.createdAt(),
-                vote.deadline(),
-                remainingTime,
-                vote.voteType(),
-                (int) voterCount,
-                items);
+        return new VoteDetailResponse(vote.id(), currentStatus, vote.title(), vote.description(), vote.createdAt(),
+                vote.deadline(), remainingTime, vote.voteType(), (int) voterCount, items);
     }
 
     // 마감 기한까지 남은 시간을 계산해 문자열로 반환
@@ -123,7 +113,8 @@ public class VoteService {
         // 3. formating: 1시간 이상 남았으면 '분'까지만, 1시간 미만이면 '초'까지 표시
         if (hours > 0) {
             return String.format("%d시간 %d분 남음", hours, minutes);
-        } else {
+        }
+        else {
             return String.format("%d분 %d초 남음", minutes, seconds);
         }
     }
