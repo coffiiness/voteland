@@ -21,7 +21,7 @@ const fetchVote = async () => {
     const response = await voteApi.getVote(route.params.id)
     vote.value = response.data.data || response.data
 
-    if (vote.value.status === 'CLOSED') {
+    if (vote.value.voteStatus === 'CLOSED') {
       router.replace(`/votes/${route.params.id}/result`)
     }
   } catch (e) {
@@ -161,7 +161,7 @@ onUnmounted(() => {
 
         <div class="space-y-3">
           <button
-            v-for="option in vote.options"
+            v-for="option in vote.items"
             :key="option.id"
             type="button"
             @click="selectOption(option.id)"
@@ -206,7 +206,7 @@ onUnmounted(() => {
 
       <!-- Voter Count -->
       <div class="mt-6 text-center text-sm text-gray-500">
-        현재 {{ vote.voterCount || 0 }}명 참여
+        현재 {{ vote.participantCount || 0 }}명 참여
       </div>
     </main>
   </div>

@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -59,8 +59,8 @@ export const voteApi = {
   createVote(data) {
     return api.post('/votes', data)
   },
-  submitVote(id, optionId) {
-    return api.post(`/votes/${id}/vote`, { optionId })
+  submitVote(id, itemIds) {
+    return api.post(`/votes/${id}/submit`, { itemIds })
   },
   getVoteResult(id) {
     return api.get(`/votes/${id}/result`)

@@ -7,10 +7,11 @@ COPY core core
 COPY storage storage
 COPY support support
 COPY clients clients
-RUN chmod +x gradlew && ./gradlew :core:core-api:bootJar -x test
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && ./gradlew :core:core-api:bootJar -x test
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/core/core-api/build/libs/*.jar app.jar
+COPY .env .env
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "export $(grep -v '^#' .env | xargs) && java -jar app.jar"]
