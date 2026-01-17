@@ -1,4 +1,4 @@
-package com.team.voteland.domain.vote.api.v1.requset;
+package com.team.voteland.domain.vote.api.v1.request;
 
 import com.team.voteland.core.enums.VoteType;
 

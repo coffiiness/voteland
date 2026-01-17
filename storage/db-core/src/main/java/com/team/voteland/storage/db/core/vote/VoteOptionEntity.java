@@ -8,8 +8,8 @@ import jakarta.persistence.*;
         indexes = { @Index(name = "idx_vote_options", columnList = "vote_id, sequence", unique = true) })
 public class VoteOptionEntity extends BaseEntity {
 
-    @Version  // ← 이 줄 추가
-    private Long version;  // ← 이 줄 추가
+    @Version
+    private Long version;
 
     @Column(name = "vote_id", nullable = false)
     private Long voteId;
@@ -61,4 +61,5 @@ public class VoteOptionEntity extends BaseEntity {
             this.voteCount--;
         }
     }
+
 }

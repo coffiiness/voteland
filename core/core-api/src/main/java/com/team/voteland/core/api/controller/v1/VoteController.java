@@ -2,7 +2,7 @@ package com.team.voteland.core.api.controller.v1;
 
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
-import com.team.voteland.domain.vote.api.v1.requset.CreateVoteRequest;
+import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
 import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
@@ -27,7 +27,7 @@ public class VoteController {
 
     @PostMapping("/api/v1/votes")
     public ApiResponse<?> createVote(@AuthenticationPrincipal SecurityUser securityUser,
-                                     @RequestBody CreateVoteRequest request) {
+            @RequestBody CreateVoteRequest request) {
         voteService.createVote(securityUser.userId(), request.title(), request.description(), request.voteType(),
                 request.options(), request.deadline());
         return ApiResponse.success();
@@ -47,10 +47,8 @@ public class VoteController {
     }
 
     @PostMapping("/api/v1/votes/{voteId}/submit")
-    public ApiResponse<VoteSubmitResponse> submitVote(
-            @PathVariable Long voteId,
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody VoteSubmitRequest request) {
+    public ApiResponse<VoteSubmitResponse> submitVote(@PathVariable Long voteId,
+            @AuthenticationPrincipal SecurityUser securityUser, @RequestBody VoteSubmitRequest request) {
         VoteSubmitResponse response = voteService.submitVote(voteId, securityUser.userId(), request);
         return ApiResponse.success(response);
     }

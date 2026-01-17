@@ -8,5 +8,5 @@ import com.team.voteland.core.enums.VoteType;
 
 public record VoteDetailResponse(Long id, VoteStatus voteStatus, String title, String description,
         LocalDateTime createdAt, LocalDateTime deadline, String remainingTime, VoteType voteType,
-        Integer participantCount, List<VoteItemResponse> items) {
+        Integer participantCount, List<VoteOptionResponse> items) {
 }

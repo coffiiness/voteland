@@ -3,8 +3,12 @@ package com.team.voteland.domain.vote.domain;
 import com.team.voteland.core.enums.VoteStatus;
 import com.team.voteland.core.enums.VoteType;
 import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteItemResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteOptionResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteOptionResultResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteResultResponse;
+import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
+import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
+import com.team.voteland.storage.db.core.BaseEntity;
 import com.team.voteland.storage.db.core.vote.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,9 +97,10 @@ public class VoteService {
         }
 
         // VoteOptionEntity를 DTO로 변환
-        List<VoteItemResponse> items = voteOptions.stream()
-            .map(option -> new VoteItemResponse(option.getId(), option.getContent()))
-            .toList();
+        List<VoteOptionResponse> items = voteOptions.stream()
+                .map(option -> new VoteOptionResponse(option.getId(),
+                        option.getContent()))
+                .toList();
 
         // 최종 상세 조회 응답 객체 생성 및 반환
         return new VoteDetailResponse(vote.id(), currentStatus, vote.title(), vote.description(), vote.createdAt(),
@@ -123,4 +128,73 @@ public class VoteService {
         }
     }
 
+    /**
+     * 투표 결과 조회
+     */
+    @Transactional(readOnly = true)
+    public VoteResultResponse getVoteResult(Long voteId) {
+        VoteEntity voteEntity = voteRepository.findById(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+        Vote vote = Vote.from(voteEntity);
+
+        // 옵션 목록 조회
+        List<VoteOptionEntity> options = voteOptionRepository.findAllByVoteId(voteId);
+
+        // 총 참여자 수
+        long totalParticipants = voteRecordRepository.countByVoteId(voteId);
+
+        // 결과 리스트 생성 (비율 및 순위 계산)
+        List<VoteOptionResultResponse> resultItems = new ArrayList<>();
+        for (VoteOptionEntity option : options) {
+            double ratio = 0.0;
+            if (totalParticipants > 0) {
+                ratio = (double) option.getVoteCount() / totalParticipants * 100.0;
+            }
+
+            // 일단 순위는 나중에 정렬 후 매김 (0으로 초기화)
+            resultItems.add(new VoteOptionResultResponse(
+                    option.getId(),
+                    option.getContent(),
+                    option.getVoteCount(),
+                    Math.round(ratio * 10.0) / 10.0, // 소수점 첫째 자리 반올림
+                    0
+            ));
+        }
+
+        // 득표수 내림차순 정렬
+        resultItems.sort((o1, o2) -> Integer.compare(o2.voteCount(), o1.voteCount()));
+
+        // 순위 매기기
+        List<VoteOptionResultResponse> rankedItems = new ArrayList<>();
+        int currentRank = 1;
+        for (VoteOptionResultResponse item : resultItems) {
+            rankedItems.add(new VoteOptionResultResponse(
+                    item.id(),
+                    item.content(),
+                    item.voteCount(),
+                    item.voteRatio(),
+                    currentRank++
+            ));
+        }
+
+        // 마지막 업데이트 시간
+        LocalDateTime lastUpdatedAt = voteRecordRepository.findTopByVoteIdOrderByCreatedAtDesc(voteId)
+                .map(BaseEntity::getCreatedAt)
+                .orElse(vote.createdAt());
+
+        // 현재 상태 계산
+        LocalDateTime now = LocalDateTime.now();
+        VoteStatus currentStatus = now.isBefore(vote.deadline()) ? VoteStatus.OPEN : VoteStatus.CLOSED;
+
+        return new VoteResultResponse(
+                vote.id(),
+                vote.title(),
+                vote.description(),
+                currentStatus,
+                (int) totalParticipants,
+                vote.deadline(),
+                lastUpdatedAt,
+                rankedItems
+        );
+    }
 }
