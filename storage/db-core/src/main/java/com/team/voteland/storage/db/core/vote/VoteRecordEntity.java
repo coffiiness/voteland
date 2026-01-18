@@ -4,8 +4,8 @@ import com.team.voteland.storage.db.core.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "vote_records",
-        indexes = { @Index(name = "idx_vote_records", columnList = "vote_id, user_id, option_id", unique = true) })
+@Table(name = "vote_records", indexes = {
+        @Index(name = "idx_vote_records", columnList = "vote_id, user_id, option_id", unique = true) })
 public class VoteRecordEntity extends BaseEntity {
 
     @Column(name = "vote_id")
@@ -16,5 +16,14 @@ public class VoteRecordEntity extends BaseEntity {
 
     @Column(name = "option_id")
     private Long voteOptionId;
+
+    protected VoteRecordEntity() {
+    }
+
+    public VoteRecordEntity(Long voteId, Long userId, Long voteOptionId) {
+        this.voteId = voteId;
+        this.userId = userId;
+        this.voteOptionId = voteOptionId;
+    }
 
 }

@@ -21,7 +21,7 @@ const fetchVote = async () => {
     const response = await voteApi.getVote(route.params.id)
     vote.value = response.data.data || response.data
 
-    if (vote.value.status === 'CLOSED') {
+    if (vote.value.voteStatus === 'CLOSED') {
       router.replace(`/votes/${route.params.id}/result`)
     }
   } catch (e) {
@@ -91,7 +91,8 @@ const handleSubmit = async () => {
     await voteApi.submitVote(route.params.id, selectedOptions.value)
     router.push(`/votes/${route.params.id}/result`)
   } catch (e) {
-    error.value = e.response?.data?.message || '투표에 실패했습니다.'
+    console.error(e)
+    error.value = (e.response?.data?.message || e.message) + ' (' + (e.response?.status || 'unknown') + ')'
   } finally {
     submitting.value = false
   }
@@ -206,7 +207,7 @@ onUnmounted(() => {
 
       <!-- Voter Count -->
       <div class="mt-6 text-center text-sm text-gray-500">
-        현재 {{ vote.voterCount || 0 }}명 참여
+        현재 {{ vote.participantCount || 0 }}명 참여
       </div>
     </main>
   </div>

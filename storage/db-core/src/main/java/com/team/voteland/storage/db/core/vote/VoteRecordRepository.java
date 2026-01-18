@@ -6,4 +6,6 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecordEntity, Lo
 
     long countByVoteId(Long voteId);
 
+    long countByVoteOptionId(Long voteOptionId);
+
 }
