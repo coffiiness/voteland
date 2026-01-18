@@ -2,12 +2,11 @@ package com.team.voteland.api.users.signup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.team.voteland.api.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import com.team.voteland.api.TestFixture;
 import com.team.voteland.api.VotelandApiTest;
 import com.team.voteland.domain.user.api.v1.request.SignUpRequest;
 import com.team.voteland.domain.user.api.v1.response.UserResponse;
@@ -17,7 +16,7 @@ import com.team.voteland.domain.user.api.v1.response.UserResponse;
 public class POST_specs {
 
     @Test
-    void 올바르게_요청하면_201_Created_상태코드를_반환한다(@Autowired TestFixture fixture) {
+    void 올바르게_요청하면_201_Created_상태코드를_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         SignUpRequest request = new SignUpRequest(fixture.randomEmail(), fixture.randomPassword(),
                 fixture.randomName());
@@ -31,7 +30,7 @@ public class POST_specs {
     }
 
     @Test
-    void 이메일_형식이_올바르지_않으면_400_Bad_Request_상태코드를_반환한다(@Autowired TestFixture fixture) {
+    void 이메일_형식이_올바르지_않으면_400_Bad_Request_상태코드를_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         SignUpRequest request = new SignUpRequest("invalid-email", fixture.randomPassword(), fixture.randomName());
 
@@ -44,7 +43,7 @@ public class POST_specs {
     }
 
     @Test
-    void 비밀번호가_4자_미만이면_400_Bad_Request_상태코드를_반환한다(@Autowired TestFixture fixture) {
+    void 비밀번호가_4자_미만이면_400_Bad_Request_상태코드를_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         SignUpRequest request = new SignUpRequest(fixture.randomEmail(), "123", fixture.randomName());
 
@@ -57,7 +56,7 @@ public class POST_specs {
     }
 
     @Test
-    void 이름이_2자_미만이면_400_Bad_Request_상태코드를_반환한다(@Autowired TestFixture fixture) {
+    void 이름이_2자_미만이면_400_Bad_Request_상태코드를_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         SignUpRequest request = new SignUpRequest(fixture.randomEmail(), fixture.randomPassword(), "A");
 
@@ -70,7 +69,7 @@ public class POST_specs {
     }
 
     @Test
-    void 회원가입_성공시_사용자_정보를_올바르게_반환한다(@Autowired TestFixture fixture) {
+    void 회원가입_성공시_사용자_정보를_올바르게_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         String email = fixture.randomEmail();
         String name = fixture.randomName();
@@ -86,7 +85,7 @@ public class POST_specs {
     }
 
     @Test
-    void 회원가입_성공시_사용자_ID를_반환한다(@Autowired TestFixture fixture) {
+    void 회원가입_성공시_사용자_ID를_반환한다(@Autowired UserFixture fixture) {
         // Arrange
         SignUpRequest request = new SignUpRequest(fixture.randomEmail(), fixture.randomPassword(),
                 fixture.randomName());

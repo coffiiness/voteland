@@ -14,13 +14,13 @@ import com.team.voteland.domain.user.api.v1.response.LoginResponse;
 import com.team.voteland.domain.user.api.v1.response.UserResponse;
 
 @Component
-public class TestFixture {
+public class UserFixture {
 
     private final TestRestTemplate restTemplate;
 
     private String accessToken;
 
-    public TestFixture(TestRestTemplate restTemplate) {
+    public UserFixture(TestRestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
