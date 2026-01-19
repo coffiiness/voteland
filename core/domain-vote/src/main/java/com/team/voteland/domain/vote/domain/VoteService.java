@@ -10,6 +10,8 @@ import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
 import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
 import com.team.voteland.storage.db.core.BaseEntity;
 import com.team.voteland.storage.db.core.vote.*;
+import com.team.voteland.support.error.CoreException;
+import com.team.voteland.support.error.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class VoteService {
@@ -43,6 +42,22 @@ public class VoteService {
      */
     public void createVote(Long userId, String title, String description, VoteType voteType, List<String> options,
                            LocalDateTime deadline) {
+
+        // deadline이 현재 시간보다 과거인지 체크
+        if(deadline.isBefore(LocalDateTime.now())) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
+        // 옵션이 비었거나 개수가 2개 이하인지 체크
+        if(options.isEmpty() || options.size() < 2) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
+        // 제목 빈칸 또는 공백만 있는지 체크
+        if(title.isBlank()) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
         VoteEntity voteEntity = new VoteEntity(userId, title, description, voteType, deadline);
         voteRepository.save(voteEntity);
 
@@ -196,5 +211,9 @@ public class VoteService {
                 lastUpdatedAt,
                 rankedItems
         );
+    }
+
+    public VoteSubmitResponse submitVote(Long voteId, Long aLong, VoteSubmitRequest request) {
+        return null;
     }
 }
