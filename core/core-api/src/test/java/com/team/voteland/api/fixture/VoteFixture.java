@@ -1,11 +1,10 @@
-package com.team.voteland.api;
+package com.team.voteland.api.fixture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.voteland.core.enums.VoteType;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,12 +12,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-@Component
-public class VoteFixture extends BaseFixture {
+public record VoteFixture(
+		BaseFixture base
+) {
 
-	public VoteFixture(TestRestTemplate restTemplate, ObjectMapper objectMapper) {
-		super(restTemplate, objectMapper);
+	public static VoteFixture create(Environment environment, ObjectMapper objectMapper) {
+		return new VoteFixture(BaseFixture.create(environment, objectMapper));
 	}
+
+	// ==================== Random Data Generators ====================
 
 	public String randomTitle() {
 		return "title-" + UUID.randomUUID();
@@ -46,9 +48,18 @@ public class VoteFixture extends BaseFixture {
 		return LocalDateTime.now().plusHours(new Random().nextInt(6) + 1);
 	}
 
+	// ==================== API Calls ====================
+
 	public ApiResponse<Void> createVote(String title, String description, VoteType voteType, List<String> options,
 			LocalDateTime deadline) {
 		CreateVoteRequest request = new CreateVoteRequest(title, description, voteType, options, deadline);
-		return post("/api/v1/votes", request, Void.class);
+		return base.post("/api/v1/votes", request, Void.class);
 	}
+
+	public ApiResponse<Void> createVote(String title, String description, VoteType voteType, List<String> options,
+			LocalDateTime deadline, String token) {
+		CreateVoteRequest request = new CreateVoteRequest(title, description, voteType, options, deadline);
+		return base.post("/api/v1/votes", request, token, Void.class);
+	}
+
 }

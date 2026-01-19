@@ -2,7 +2,7 @@ package com.team.voteland.api.users.me;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.team.voteland.api.UserFixture;
+import com.team.voteland.api.fixture.UserFixture;
 import com.team.voteland.api.VotelandApiTest;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.core.support.response.ResultType;
@@ -30,7 +30,7 @@ public class GET_specs {
 	@Test
 	void 인증_토큰_없이_요청하면_에러_응답을_반환한다(@Autowired UserFixture fixture) {
 		// Arrange & Act
-		ApiResponse<UserResponse> response = fixture.get("/api/v1/users/me", UserResponse.class);
+		ApiResponse<UserResponse> response = fixture.base().get("/api/v1/users/me", UserResponse.class);
 
 		// Assert
 		assertThat(response.getResult()).isEqualTo(ResultType.ERROR);

@@ -2,7 +2,7 @@ package com.team.voteland.api.users.signup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.team.voteland.api.UserFixture;
+import com.team.voteland.api.fixture.UserFixture;
 import com.team.voteland.api.VotelandApiTest;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.core.support.response.ResultType;

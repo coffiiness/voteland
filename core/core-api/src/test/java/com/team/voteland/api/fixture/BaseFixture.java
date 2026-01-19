@@ -1,30 +1,28 @@
-package com.team.voteland.api;
+package com.team.voteland.api.fixture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.core.support.response.ResultType;
+import org.springframework.boot.test.web.client.LocalHostUriTemplateHandler;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
-@Component
-public class BaseFixture {
+public record BaseFixture(
+		TestRestTemplate client,
+		ObjectMapper objectMapper
+) {
 
-	protected final TestRestTemplate restTemplate;
-
-	protected final ObjectMapper objectMapper;
-
-	public BaseFixture(TestRestTemplate restTemplate, ObjectMapper objectMapper) {
-		this.restTemplate = restTemplate;
-		this.objectMapper = objectMapper;
-	}
-
-	public TestRestTemplate client() {
-		return restTemplate;
+	public static BaseFixture create(Environment environment, ObjectMapper objectMapper) {
+		TestRestTemplate client = new TestRestTemplate(new RestTemplateBuilder());
+		LocalHostUriTemplateHandler uriTemplateHandler = new LocalHostUriTemplateHandler(environment);
+		client.setUriTemplateHandler(uriTemplateHandler);
+		return new BaseFixture(client, objectMapper);
 	}
 
 	// ==================== GET ====================
@@ -89,14 +87,15 @@ public class BaseFixture {
 		return exchange(url, HttpMethod.DELETE, request, token, responseType, urlVariables);
 	}
 
+	// ==================== Core Exchange Method ====================
+
 	@SuppressWarnings("unchecked")
 	private <T> ApiResponse<T> exchange(String url, HttpMethod method, Object request, String token,
 			Class<T> responseType, Object... urlVariables) {
 		HttpHeaders headers = createHeaders(token);
 		HttpEntity<?> entity = (request != null) ? new HttpEntity<>(request, headers) : new HttpEntity<>(headers);
 
-		ResponseEntity<ApiResponse> response = restTemplate.exchange(url, method, entity, ApiResponse.class,
-				urlVariables);
+		ResponseEntity<ApiResponse> response = client.exchange(url, method, entity, ApiResponse.class, urlVariables);
 
 		return convertResponse(response.getBody(), responseType);
 	}
