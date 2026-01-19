@@ -37,4 +37,5 @@ public class VoteRecordEntity extends BaseEntity {
     public Long getVoteOptionId() {
         return voteOptionId;
     }
+    
 }
