@@ -11,6 +11,13 @@ public class ApiResponse<S> {
 
     private final ErrorMessage error;
 
+    // Jackson 역직렬화용 기본 생성자
+    protected ApiResponse() {
+        this.result = null;
+        this.data = null;
+        this.error = null;
+    }
+
     private ApiResponse(ResultType result, S data, ErrorMessage error) {
         this.result = result;
         this.data = data;
@@ -37,7 +44,7 @@ public class ApiResponse<S> {
         return result;
     }
 
-    public Object getData() {
+    public S getData() {
         return data;
     }
 
