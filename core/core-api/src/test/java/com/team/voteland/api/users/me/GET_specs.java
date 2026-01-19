@@ -2,79 +2,66 @@ package com.team.voteland.api.users.me;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.team.voteland.api.fixture.UserFixture;
+import com.team.voteland.api.VotelandApiTest;
+import com.team.voteland.core.support.response.ApiResponse;
+import com.team.voteland.core.support.response.ResultType;
+import com.team.voteland.domain.user.api.v1.response.UserResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-
-import com.team.voteland.api.TestFixture;
-import com.team.voteland.api.VotelandApiTest;
-import com.team.voteland.domain.user.api.v1.response.UserResponse;
 
 @VotelandApiTest
 @DisplayName("GET /api/v1/users/me")
 public class GET_specs {
 
-    @Test
-    void 올바르게_요청하면_200_OK_상태코드를_반환한다(@Autowired TestFixture fixture) {
-        // Arrange
-        fixture.createUserThenSetAsDefault();
+	@Test
+	void 올바르게_요청하면_성공_응답을_반환한다(@Autowired UserFixture fixture) {
+		// Arrange
+		String token = fixture.createUserAndGetToken();
 
-        // Act
-        ResponseEntity<UserResponse> response = fixture.client()
-            .exchange("/api/v1/users/me", HttpMethod.GET, fixture.withAuth(), UserResponse.class);
+		// Act
+		ApiResponse<UserResponse> response = fixture.me(token);
 
-        // Assert
-        assertThat(response.getStatusCode().value()).isEqualTo(200);
-    }
+		// Assert
+		assertThat(response.getResult()).isEqualTo(ResultType.SUCCESS);
+	}
 
-    @Test
-    void 인증_토큰_없이_요청하면_401_Unauthorized_상태코드를_반환한다(@Autowired TestFixture fixture) {
-        // Arrange
-        fixture.clearAuth();
+	@Test
+	void 인증_토큰_없이_요청하면_에러_응답을_반환한다(@Autowired UserFixture fixture) {
+		// Arrange & Act
+		ApiResponse<UserResponse> response = fixture.base().get("/api/v1/users/me", UserResponse.class);
 
-        // Act
-        ResponseEntity<UserResponse> response = fixture.client().getForEntity("/api/v1/users/me", UserResponse.class);
+		// Assert
+		assertThat(response.getResult()).isEqualTo(ResultType.ERROR);
+	}
 
-        // Assert
-        assertThat(response.getStatusCode().value()).isEqualTo(401);
-    }
+	@Test
+	void 잘못된_토큰으로_요청하면_에러_응답을_반환한다(@Autowired UserFixture fixture) {
+		// Arrange & Act
+		ApiResponse<UserResponse> response = fixture.me("invalid-token");
 
-    @Test
-    void 잘못된_토큰으로_요청하면_401_Unauthorized_상태코드를_반환한다(@Autowired TestFixture fixture) {
-        // Arrange
-        fixture.clearAuth();
-        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.setBearerAuth("invalid-token");
+		// Assert
+		assertThat(response.getResult()).isEqualTo(ResultType.ERROR);
+	}
 
-        // Act
-        ResponseEntity<UserResponse> response = fixture.client()
-            .exchange("/api/v1/users/me", HttpMethod.GET, new org.springframework.http.HttpEntity<>(headers),
-                    UserResponse.class);
+	@Test
+	void 내_정보를_올바르게_반환한다(@Autowired UserFixture fixture) {
+		// Arrange
+		String email = fixture.randomEmail();
+		String password = fixture.randomPassword();
+		String name = fixture.randomName();
+		String token = fixture.createUserAndGetToken(email, password, name);
 
-        // Assert
-        assertThat(response.getStatusCode().value()).isEqualTo(401);
-    }
+		// Act
+		ApiResponse<UserResponse> response = fixture.me(token);
 
-    @Test
-    void 내_정보를_올바르게_반환한다(@Autowired TestFixture fixture) {
-        // Arrange
-        String email = fixture.randomEmail();
-        String password = fixture.randomPassword();
-        String name = fixture.randomName();
-        fixture.signUp(email, password, name);
-        fixture.login(email, password);
-
-        fixture.createUserThenSetAsDefault();
-
-        // Act
-        ResponseEntity<UserResponse> response = fixture.client()
-            .exchange("/api/v1/users/me", HttpMethod.GET, fixture.withAuth(), UserResponse.class);
-
-        // Assert
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().id()).isNotNull();
-    }
+		// Assert
+		assertThat(response.getResult()).isEqualTo(ResultType.SUCCESS);
+		assertThat(response.getData()).isNotNull();
+		assertThat(response.getData().id()).isNotNull();
+		assertThat(response.getData().email()).isEqualTo(email);
+		assertThat(response.getData().name()).isEqualTo(name);
+	}
 
 }

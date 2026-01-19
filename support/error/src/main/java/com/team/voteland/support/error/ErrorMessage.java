@@ -8,6 +8,12 @@ public class ErrorMessage {
 
     private final Object data;
 
+    protected ErrorMessage() {
+        this.code = null;
+        this.message = null;
+        this.data = null;
+    }
+
     public ErrorMessage(ErrorType errorType) {
         this.code = errorType.getCode().name();
         this.message = errorType.getMessage();

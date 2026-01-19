@@ -2,26 +2,23 @@ package com.team.voteland.domain.vote.domain;
 
 import com.team.voteland.core.enums.VoteStatus;
 import com.team.voteland.core.enums.VoteType;
-import com.team.voteland.support.error.CoreException;
-import com.team.voteland.support.error.ErrorType;
 import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteOptionResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteOptionResultResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteResultResponse;
+import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
+import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
+import com.team.voteland.storage.db.core.BaseEntity;
 import com.team.voteland.storage.db.core.vote.*;
+import com.team.voteland.support.error.CoreException;
+import com.team.voteland.support.error.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class VoteService {
@@ -34,7 +31,7 @@ public class VoteService {
 
     @Autowired
     public VoteService(VoteRepository voteRepository, VoteOptionRepository voteOptionRepository,
-            VoteRecordRepository voteRecordRepository) {
+                       VoteRecordRepository voteRecordRepository) {
         this.voteRepository = voteRepository;
         this.voteOptionRepository = voteOptionRepository;
         this.voteRecordRepository = voteRecordRepository;
@@ -44,7 +41,23 @@ public class VoteService {
      * 투표 생성
      */
     public void createVote(Long userId, String title, String description, VoteType voteType, List<String> options,
-            LocalDateTime deadline) {
+                           LocalDateTime deadline) {
+
+        // deadline이 현재 시간보다 과거인지 체크
+        if(deadline.isBefore(LocalDateTime.now())) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
+        // 옵션이 비었거나 개수가 2개 이하인지 체크
+        if(options.isEmpty() || options.size() < 2) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
+        // 제목 빈칸 또는 공백만 있는지 체크
+        if(title.isBlank()) {
+            throw new CoreException(ErrorType.DEFAULT_ERROR);
+        }
+
         VoteEntity voteEntity = new VoteEntity(userId, title, description, voteType, deadline);
         voteRepository.save(voteEntity);
 
@@ -66,7 +79,7 @@ public class VoteService {
         List<VoteInfo> voteInfos = new ArrayList<>();
         for (Vote vote : votes) {
             long optionCount = voteOptionRepository.countByVoteId(vote.id());
-            long voterCount = voteRecordRepository.countDistinctUserIdByVoteId(vote.id());
+            long voterCount = voteRecordRepository.countByVoteId(vote.id());
 
             VoteInfo voteInfo = VoteInfo.of(vote, (int) optionCount, (int) voterCount);
             voteInfos.add(voteInfo);
@@ -78,88 +91,56 @@ public class VoteService {
     /**
      * 투표 상세 조회
      */
+    // 투표 정보 조회 및 도메인 객체(Vote)로 변환
     public VoteDetailResponse getVoteDetail(Long voteId) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
+            .orElseThrow(() -> new IllegalArgumentException("Vote not found"));
+        Vote vote = Vote.from(voteEntity);
 
-        List<VoteOptionEntity> voteOptionEntities = voteOptionRepository.findAllByVoteId(voteId);
-        long participantCount = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
+        // 투표 옵션 조회
+        List<VoteOptionEntity> voteOptions = voteOptionRepository.findAllByVoteId(vote.id());
+        long voterCount = voteRecordRepository.countByVoteId(voteId);
 
+        // 마감까지 남은 시간 계산
         LocalDateTime now = LocalDateTime.now();
-        VoteStatus voteStatus = now.isAfter(voteEntity.getDeadline()) ? VoteStatus.CLOSED : VoteStatus.OPEN;
+        String remainingTime = calculateRemainingTime(now, vote.deadline());
 
-        String remainingTime;
-        if (voteStatus == VoteStatus.CLOSED) {
-            remainingTime = "마감됨";
-        } else {
-            long days = Duration.between(now, voteEntity.getDeadline()).toDays();
-            remainingTime = days + "일 남음";
+        // 마감 시간이 지났으면 VoteStatus를 '종료(CLOSED)'로 설정
+        VoteStatus currentStatus = vote.voteStatus();
+        if (now.isAfter(vote.deadline())) {
+            currentStatus = VoteStatus.CLOSED;
         }
 
-        List<VoteOptionResponse> options = voteOptionEntities.stream()
-                .map(option -> new VoteOptionResponse(option.getId(), option.getContent()))
+        // VoteOptionEntity를 DTO로 변환
+        List<VoteOptionResponse> items = voteOptions.stream()
+                .map(option -> new VoteOptionResponse(option.getId(),
+                        option.getContent()))
                 .toList();
 
-        return new VoteDetailResponse(
-                voteEntity.getId(),
-                voteStatus,
-                voteEntity.getTitle(),
-                voteEntity.getDescription(),
-                voteEntity.getCreatedAt(),
-                voteEntity.getDeadline(),
-                remainingTime,
-                voteEntity.getVoteType(),
-                (int) participantCount,
-                options);
+        // 최종 상세 조회 응답 객체 생성 및 반환
+        return new VoteDetailResponse(vote.id(), currentStatus, vote.title(), vote.description(), vote.createdAt(),
+                vote.deadline(), remainingTime, vote.voteType(), (int) voterCount, items);
     }
 
-    /**
-     * 투표제출
-     */
-    @Transactional
-    public void submitVote(Long userId, Long voteId, List<Long> itemIds) {
-        VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
-
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(voteEntity.getDeadline())) {
-            throw new CoreException(ErrorType.VALIDATION_ERROR, "투표가 마감되었습니다.");
+    // 마감 기한까지 남은 시간을 계산해 문자열로 반환
+    private String calculateRemainingTime(LocalDateTime now, LocalDateTime deadline) {
+        // 1. 이미 마감된 경우
+        if (now.isAfter(deadline)) {
+            return "투표 종료";
         }
+        // 2. 시간 차이 계산
+        java.time.Duration duration = java.time.Duration.between(now, deadline);
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
 
-        // 사용자 중복 투표 체크
-        long userVoteCount = voteRecordRepository.countByVoteId(voteEntity.getId());
-
-        // 투표 타입 검증 (단일 투표인데 다중 선택을 한 경우)
-        if (voteEntity.getVoteType() == VoteType.SINGLE && itemIds.size() > 1) {
-            throw new CoreException(ErrorType.VALIDATION_ERROR, "단일 투표는 하나의 항목만 선택할 수 있습니다.");
+        // 3. formating: 1시간 이상 남았으면 '분'까지만, 1시간 미만이면 '초'까지 표시
+        if (hours > 0) {
+            return String.format("%d시간 %d분 남음", hours, minutes);
         }
-
-        // 옵션 검증 및 레코드 생성
-
-        // 기존 투표 삭제 (재투표 지원)
-        voteRecordRepository.deleteByVoteIdAndUserId(voteId, userId);
-        voteRecordRepository.flush();
-
-        List<VoteRecordEntity> records = new ArrayList<>();
-        for (Long itemId : itemIds) {
-            // 해당 투표의 항목인지 검증
-            VoteOptionEntity option = voteOptionRepository.findById(itemId)
-                    .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "존재하지 않는 항목입니다."));
-
-            if (!option.getVoteId().equals(voteId)) {
-                throw new CoreException(ErrorType.VALIDATION_ERROR, "해당 투표의 항목이 아닙니다.");
-            }
-
-            records.add(new VoteRecordEntity(voteId, userId, itemId));
+        else {
+            return String.format("%d분 %d초 남음", minutes, seconds);
         }
-
-        try {
-            voteRecordRepository.saveAll(records);
-        } catch (Exception e) {
-            // 데이터 무결성 예외 처리 (이미 참여한 경우 등)
-            throw new CoreException(ErrorType.VALIDATION_ERROR, "이미 참여한 투표이거나 중복 투표입니다.");
-        }
-
     }
 
     /**
@@ -168,46 +149,71 @@ public class VoteService {
     @Transactional(readOnly = true)
     public VoteResultResponse getVoteResult(Long voteId) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+        Vote vote = Vote.from(voteEntity);
 
-        List<VoteOptionEntity> voteOptionEntities = voteOptionRepository.findAllByVoteId(voteId);
-        long totalVoteCount = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
+        // 옵션 목록 조회
+        List<VoteOptionEntity> options = voteOptionRepository.findAllByVoteId(voteId);
 
-        LocalDateTime now = LocalDateTime.now();
-        VoteStatus voteStatus = now.isAfter(voteEntity.getDeadline()) ? VoteStatus.CLOSED : VoteStatus.OPEN;
+        // 총 참여자 수
+        long totalParticipants = voteRecordRepository.countByVoteId(voteId);
 
-        // 각 옵션별 득표수, 비율 계산
-        List<VoteOptionResultResponse> optionResults = new ArrayList<>();
-        for (VoteOptionEntity option : voteOptionEntities) {
-            long count = voteRecordRepository.countByVoteOptionId(option.getId());
-            double ratio = totalVoteCount == 0 ? 0.0 : (double) count / totalVoteCount * 100.0;
-            optionResults.add(new VoteOptionResultResponse(option.getId(), option.getContent(), (int) count, ratio, 0));
-        }
-
-        // 득표수 기준 내림차순 정렬
-        optionResults.sort(Comparator.comparingInt(VoteOptionResultResponse::voteCount).reversed());
-
-        // 순위 매기기 (동점자 처리 고려)
-        List<VoteOptionResultResponse> rankedOptions = new ArrayList<>();
-        int rank = 1;
-        for (int i = 0; i < optionResults.size(); i++) {
-            VoteOptionResultResponse current = optionResults.get(i);
-            // 이전 항목보다 득표수가 적으면 순위 증가, 같으면 동일 순위 유지
-            if (i > 0 && current.voteCount() < optionResults.get(i - 1).voteCount()) {
-                rank++;
+        // 결과 리스트 생성 (비율 및 순위 계산)
+        List<VoteOptionResultResponse> resultItems = new ArrayList<>();
+        for (VoteOptionEntity option : options) {
+            double ratio = 0.0;
+            if (totalParticipants > 0) {
+                ratio = (double) option.getVoteCount() / totalParticipants * 100.0;
             }
-            rankedOptions.add(new VoteOptionResultResponse(current.id(), current.content(), current.voteCount(),
-                    current.voteRatio(), rank));
+
+            // 일단 순위는 나중에 정렬 후 매김 (0으로 초기화)
+            resultItems.add(new VoteOptionResultResponse(
+                    option.getId(),
+                    option.getContent(),
+                    option.getVoteCount(),
+                    Math.round(ratio * 10.0) / 10.0, // 소수점 첫째 자리 반올림
+                    0
+            ));
         }
+
+        // 득표수 내림차순 정렬
+        resultItems.sort((o1, o2) -> Integer.compare(o2.voteCount(), o1.voteCount()));
+
+        // 순위 매기기
+        List<VoteOptionResultResponse> rankedItems = new ArrayList<>();
+        int currentRank = 1;
+        for (VoteOptionResultResponse item : resultItems) {
+            rankedItems.add(new VoteOptionResultResponse(
+                    item.id(),
+                    item.content(),
+                    item.voteCount(),
+                    item.voteRatio(),
+                    currentRank++
+            ));
+        }
+
+        // 마지막 업데이트 시간
+        LocalDateTime lastUpdatedAt = voteRecordRepository.findTopByVoteIdOrderByCreatedAtDesc(voteId)
+                .map(BaseEntity::getCreatedAt)
+                .orElse(vote.createdAt());
+
+        // 현재 상태 계산
+        LocalDateTime now = LocalDateTime.now();
+        VoteStatus currentStatus = now.isBefore(vote.deadline()) ? VoteStatus.OPEN : VoteStatus.CLOSED;
 
         return new VoteResultResponse(
-                voteEntity.getId(),
-                voteEntity.getTitle(),
-                voteEntity.getDescription(),
-                voteStatus,
-                (int) totalVoteCount,
-                voteEntity.getDeadline(),
-                LocalDateTime.now(),
-                rankedOptions);
+                vote.id(),
+                vote.title(),
+                vote.description(),
+                currentStatus,
+                (int) totalParticipants,
+                vote.deadline(),
+                lastUpdatedAt,
+                rankedItems
+        );
+    }
+
+    public VoteSubmitResponse submitVote(Long voteId, Long aLong, VoteSubmitRequest request) {
+        return null;
     }
 }

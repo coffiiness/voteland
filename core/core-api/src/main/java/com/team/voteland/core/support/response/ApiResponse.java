@@ -1,5 +1,6 @@
 package com.team.voteland.core.support.response;
 
+
 import com.team.voteland.support.error.ErrorMessage;
 import com.team.voteland.support.error.ErrorType;
 
@@ -10,6 +11,13 @@ public class ApiResponse<S> {
     private final S data;
 
     private final ErrorMessage error;
+
+    // Jackson 역직렬화용 기본 생성자
+    protected ApiResponse() {
+        this.result = null;
+        this.data = null;
+        this.error = null;
+    }
 
     private ApiResponse(ResultType result, S data, ErrorMessage error) {
         this.result = result;
@@ -37,7 +45,7 @@ public class ApiResponse<S> {
         return result;
     }
 
-    public Object getData() {
+    public S getData() {
         return data;
     }
 
