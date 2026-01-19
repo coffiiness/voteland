@@ -116,6 +116,7 @@ public class VoteService {
     /**
      * 투표제출
      */
+    @Transactional
     public void submitVote(Long userId, Long voteId, List<Long> itemIds) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
@@ -134,6 +135,10 @@ public class VoteService {
         }
 
         // 옵션 검증 및 레코드 생성
+
+        // 기존 투표 삭제 (재투표 지원)
+        voteRecordRepository.deleteByVoteIdAndUserId(voteId, userId);
+
         List<VoteRecordEntity> records = new ArrayList<>();
         for (Long itemId : itemIds) {
             // 해당 투표의 항목인지 검증
