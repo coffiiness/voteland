@@ -3,6 +3,7 @@ package com.team.voteland.core.api.controller.v1;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
 import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
+import jakarta.validation.Valid;
 import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
