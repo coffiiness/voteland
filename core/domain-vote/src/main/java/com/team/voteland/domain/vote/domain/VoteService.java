@@ -138,6 +138,7 @@ public class VoteService {
 
         // 기존 투표 삭제 (재투표 지원)
         voteRecordRepository.deleteByVoteIdAndUserId(voteId, userId);
+        voteRecordRepository.flush();
 
         List<VoteRecordEntity> records = new ArrayList<>();
         for (Long itemId : itemIds) {
