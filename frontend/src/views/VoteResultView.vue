@@ -11,8 +11,8 @@ const error = ref('')
 const lastUpdated = ref('')
 
 const totalVotes = computed(() => {
-  if (!vote.value?.options) return 0
-  return vote.value.options.reduce((sum, opt) => sum + (opt.voteCount || 0), 0)
+  if (!vote.value) return 0
+  return vote.value.participantCount
 })
 
 const sortedOptions = computed(() => {
@@ -20,9 +20,10 @@ const sortedOptions = computed(() => {
   return [...vote.value.options].sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0))
 })
 
-const getPercentage = (count) => {
+const getPercentage = (option) => {
+  if (option.voteRatio !== undefined) return option.voteRatio.toFixed(1)
   if (totalVotes.value === 0) return 0
-  return ((count / totalVotes.value) * 100).toFixed(1)
+  return ((option.voteCount || 0) / totalVotes.value * 100).toFixed(1)
 }
 
 const chartColors = ['#1f2937', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb']
@@ -88,7 +89,7 @@ onMounted(fetchResult)
             <div class="text-sm text-gray-500 mb-1">총 참여상태</div>
             <div class="font-medium text-gray-900">
               <span class="text-xl font-bold">{{ totalVotes }}</span>명
-              {{ vote.status === 'OPEN' ? '진행중' : '마감' }}
+              {{ vote.voteStatus === 'OPEN' ? '진행중' : '마감' }}
             </div>
           </div>
           <div class="text-right">
@@ -118,7 +119,7 @@ onMounted(fetchResult)
             </div>
             <div class="text-right">
               <span class="text-xl font-bold text-gray-900">{{ option.voteCount || 0 }}표</span>
-              <span class="text-gray-500 ml-2">{{ getPercentage(option.voteCount || 0) }}%</span>
+              <span class="text-gray-500 ml-2">{{ getPercentage(option) }}%</span>
             </div>
           </div>
 
@@ -126,7 +127,7 @@ onMounted(fetchResult)
           <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               class="h-full bg-gray-900 rounded-full transition-all duration-500"
-              :style="{ width: `${getPercentage(option.voteCount || 0)}%` }"
+              :style="{ width: `${getPercentage(option)}%` }"
             ></div>
           </div>
         </div>
@@ -180,7 +181,7 @@ onMounted(fetchResult)
               ></div>
               <span class="text-gray-600">{{ option.content }}</span>
               <span class="text-gray-900 font-medium">
-                {{ option.voteCount || 0 }}표 ({{ getPercentage(option.voteCount || 0) }}%)
+                {{ option.voteCount || 0 }}표 ({{ getPercentage(option) }}%)
               </span>
             </div>
           </div>

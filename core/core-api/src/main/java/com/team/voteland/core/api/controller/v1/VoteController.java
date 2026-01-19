@@ -3,7 +3,7 @@ package com.team.voteland.core.api.controller.v1;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
 import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
-
+import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse; // Added import
 import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteResultResponse;
 
@@ -55,6 +55,12 @@ public class VoteController {
     public ApiResponse<List<VoteInfoResponse>> getVoteInfos() {
         List<VoteInfo> votes = voteService.getVoteInfos();
         List<VoteInfoResponse> response = votes.stream().map(VoteInfoResponse::from).toList();
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/api/v1/votes/{voteId}")
+    public ApiResponse<VoteDetailResponse> getVoteDetail(@PathVariable Long voteId) {
+        VoteDetailResponse response = voteService.getVoteDetail(voteId);
         return ApiResponse.success(response);
     }
 
