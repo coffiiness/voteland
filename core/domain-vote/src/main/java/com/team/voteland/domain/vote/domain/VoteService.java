@@ -154,10 +154,10 @@ public class VoteService {
         List<VoteOptionEntity> options = voteOptionRepository.findAllByVoteId(voteId);
 
         // 총 참여자 수 (응답용)
-        long totalParticipants = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
+        Long totalParticipants = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
 
         // 총 투표 수 (비율 계산용 - 옵션별 득표수의 합)
-        long totalVoteCount = options.stream().mapToLong(VoteOptionEntity::getVoteCount).sum();
+        Long totalVoteCount = options.stream().mapToLong(VoteOptionEntity::getVoteCount).sum();
 
         // 결과 리스트 생성 (비율 및 순위 계산)
         List<VoteOptionResultResponse> resultItems = new ArrayList<>();
@@ -194,7 +194,7 @@ public class VoteService {
         VoteStatus currentStatus = now.isBefore(vote.deadline()) ? VoteStatus.OPEN : VoteStatus.CLOSED;
 
         return new VoteResultResponse(vote.id(), vote.title(), vote.description(), currentStatus,
-                (int) totalParticipants, vote.deadline(), lastUpdatedAt, rankedItems);
+                totalParticipants.intValue(), vote.deadline(), lastUpdatedAt, rankedItems);
     }
 
     @Transactional
