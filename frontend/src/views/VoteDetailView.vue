@@ -91,7 +91,8 @@ const handleSubmit = async () => {
     await voteApi.submitVote(route.params.id, selectedOptions.value)
     router.push(`/votes/${route.params.id}/result`)
   } catch (e) {
-    error.value = e.response?.data?.message || '투표에 실패했습니다.'
+    console.error(e)
+    error.value = (e.response?.data?.message || e.message) + ' (' + (e.response?.status || 'unknown') + ')'
   } finally {
     submitting.value = false
   }

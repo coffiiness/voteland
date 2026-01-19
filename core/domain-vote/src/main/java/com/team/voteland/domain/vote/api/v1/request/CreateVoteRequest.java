@@ -6,6 +6,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record CreateVoteRequest(String title, String description, VoteType voteType, List<String> options,
-        LocalDateTime deadline) {
+                                LocalDateTime deadline) {
 
 }

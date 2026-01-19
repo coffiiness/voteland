@@ -10,4 +10,6 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecordEntity, Lo
 
     java.util.Optional<VoteRecordEntity> findTopByVoteIdOrderByCreatedAtDesc(Long voteId);
 
+    long countByVoteOptionId(Long voteOptionId);
+
 }

@@ -63,7 +63,7 @@ export const voteApi = {
     return api.post(`/votes/${id}/submit`, { itemIds })
   },
   getVoteResult(id) {
-    return api.get(`/votes/${id}/result`)
+    return api.get(`/votes/${id}/results`)
   }
 }
 
