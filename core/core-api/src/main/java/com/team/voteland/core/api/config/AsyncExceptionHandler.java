@@ -1,6 +1,6 @@
 package com.team.voteland.core.api.config;
 
-import com.team.voteland.core.support.error.CoreException;
+import com.team.voteland.support.error.CoreException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +20,7 @@ public class AsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
                 case WARN -> log.warn("CoreException : {}", e.getMessage(), e);
                 default -> log.info("CoreException : {}", e.getMessage(), e);
             }
-        }
-        else {
+        } else {
             log.error("Exception : {}", e.getMessage(), e);
         }
     }
