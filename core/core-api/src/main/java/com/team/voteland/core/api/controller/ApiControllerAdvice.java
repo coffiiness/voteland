@@ -1,9 +1,8 @@
 package com.team.voteland.core.api.controller;
 
-import com.team.voteland.core.support.error.CoreException;
-import com.team.voteland.core.support.error.ErrorType;
 import com.team.voteland.core.support.response.ApiResponse;
-
+import com.team.voteland.support.error.CoreException;
+import com.team.voteland.support.error.ErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
