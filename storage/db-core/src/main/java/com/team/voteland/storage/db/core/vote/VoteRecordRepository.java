@@ -12,4 +12,7 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecordEntity, Lo
 
     long countByVoteOptionId(Long voteOptionId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(DISTINCT r.userId) FROM VoteRecordEntity r WHERE r.voteId = :voteId")
+    long countDistinctUserIdByVoteId(@org.springframework.data.repository.query.Param("voteId") Long voteId);
+
 }

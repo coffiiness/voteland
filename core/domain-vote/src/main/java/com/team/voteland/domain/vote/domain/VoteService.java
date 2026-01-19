@@ -66,7 +66,7 @@ public class VoteService {
         List<VoteInfo> voteInfos = new ArrayList<>();
         for (Vote vote : votes) {
             long optionCount = voteOptionRepository.countByVoteId(vote.id());
-            long voterCount = voteRecordRepository.countByVoteId(vote.id());
+            long voterCount = voteRecordRepository.countDistinctUserIdByVoteId(vote.id());
 
             VoteInfo voteInfo = VoteInfo.of(vote, (int) optionCount, (int) voterCount);
             voteInfos.add(voteInfo);
@@ -83,7 +83,7 @@ public class VoteService {
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
 
         List<VoteOptionEntity> voteOptionEntities = voteOptionRepository.findAllByVoteId(voteId);
-        long participantCount = voteRecordRepository.countByVoteId(voteId);
+        long participantCount = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
 
         LocalDateTime now = LocalDateTime.now();
         VoteStatus voteStatus = now.isAfter(voteEntity.getDeadline()) ? VoteStatus.CLOSED : VoteStatus.OPEN;
@@ -165,7 +165,7 @@ public class VoteService {
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
 
         List<VoteOptionEntity> voteOptionEntities = voteOptionRepository.findAllByVoteId(voteId);
-        long totalVoteCount = voteRecordRepository.countByVoteId(voteId);
+        long totalVoteCount = voteRecordRepository.countDistinctUserIdByVoteId(voteId);
 
         LocalDateTime now = LocalDateTime.now();
         VoteStatus voteStatus = now.isAfter(voteEntity.getDeadline()) ? VoteStatus.CLOSED : VoteStatus.OPEN;
