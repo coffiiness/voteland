@@ -29,8 +29,11 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class VoteApiDocs extends RestDocsTest {
+
     private final VoteService voteService = mock(VoteService.class);
+
     private final VoteController voteController = new VoteController(voteService);
+
     private final SecurityUser mockSecurityUser = new SecurityUser(1L, "test@example.com", "USER");
 
     @BeforeEach
@@ -49,7 +52,7 @@ public class VoteApiDocs extends RestDocsTest {
 
             @Override
             public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                          NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+                    NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
                 return mockSecurityUser;
             }
         });
@@ -58,8 +61,8 @@ public class VoteApiDocs extends RestDocsTest {
     @Test
     void 투표생성_API_문서화() throws Exception {
         // given
-        doNothing().when(voteService).createVote(anyLong(), anyString(), anyString(), any(VoteType.class), anyList(),
-                any(LocalDateTime.class));
+        doNothing().when(voteService)
+            .createVote(anyLong(), anyString(), anyString(), any(VoteType.class), anyList(), any(LocalDateTime.class));
 
         List<String> options = List.of("option1", "option2", "option3");
         CreateVoteRequest request = new CreateVoteRequest("title", "description", VoteType.SINGLE, options,
@@ -67,20 +70,18 @@ public class VoteApiDocs extends RestDocsTest {
 
         // when & then
         mockMvc
-                .perform(post("/api/v1/votes").contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding("UTF-8")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(toJson(request)))
-                .andExpect(status().isOk())
-                .andDo(document("votes", responsePreprocessor(),
-                        requestFields(fieldWithPath("title").description("제목"),
-                                fieldWithPath("description").description("설명"),
-                                fieldWithPath("voteType").description("투표 타입(단일, 중복)"),
-                                fieldWithPath("options").description("투표 항목"),
-                                fieldWithPath("deadline").description("투표 마감 기간")),
-                        responseFields(fieldWithPath("result").description("결과 타입 (SUCCESS/ERROR)"),
-                                fieldWithPath("data").description("응답 데이터").optional(),
-                                fieldWithPath("error").description("에러 정보").optional())));
+            .perform(post("/api/v1/votes").contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(toJson(request)))
+            .andExpect(status().isOk())
+            .andDo(document("votes", responsePreprocessor(), requestFields(fieldWithPath("title").description("제목"),
+                    fieldWithPath("description").description("설명"),
+                    fieldWithPath("voteType").description("투표 타입(단일, 중복)"),
+                    fieldWithPath("options").description("투표 항목"), fieldWithPath("deadline").description("투표 마감 기간")),
+                    responseFields(fieldWithPath("result").description("결과 타입 (SUCCESS/ERROR)"),
+                            fieldWithPath("data").description("응답 데이터").optional(),
+                            fieldWithPath("error").description("에러 정보").optional())));
     }
 
 }

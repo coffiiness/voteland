@@ -11,16 +11,16 @@ import org.springframework.core.env.Environment;
 @TestConfiguration
 public class FixtureConfiguration {
 
-	@Bean
-	@Scope("prototype")
-	UserFixture userFixture(Environment environment, ObjectMapper objectMapper) {
-		return UserFixture.create(environment, objectMapper);
-	}
+    @Bean
+    @Scope("prototype")
+    UserFixture userFixture(Environment environment, ObjectMapper objectMapper) {
+        return UserFixture.create(environment, objectMapper);
+    }
 
-	@Bean
-	@Scope("prototype")
-	VoteFixture voteFixture(Environment environment, ObjectMapper objectMapper) {
-		return VoteFixture.create(environment, objectMapper);
-	}
+    @Bean
+    @Scope("prototype")
+    VoteFixture voteFixture(Environment environment, ObjectMapper objectMapper) {
+        return VoteFixture.create(environment, objectMapper);
+    }
 
 }

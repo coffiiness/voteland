@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
 import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteResultResponse;
 import com.team.voteland.domain.vote.domain.VoteInfo;
 import com.team.voteland.domain.vote.domain.VoteService;
 import com.team.voteland.support.security.jwt.SecurityUser;
@@ -51,6 +52,12 @@ public class VoteController {
     public ApiResponse<VoteSubmitResponse> submitVote(@PathVariable Long voteId,
             @AuthenticationPrincipal SecurityUser securityUser, @RequestBody VoteSubmitRequest request) {
         VoteSubmitResponse response = voteService.submitVote(voteId, securityUser.userId(), request);
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/api/v1/votes/{voteId}/result")
+    public ApiResponse<VoteResultResponse> getVoteResult(@PathVariable Long voteId) {
+        VoteResultResponse response = voteService.getVoteResult(voteId);
         return ApiResponse.success(response);
     }
 

@@ -136,14 +136,12 @@ public class UserApiDocs extends RestDocsTest {
                 .characterEncoding("UTF-8")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andDo(document("users/me", responsePreprocessor(),
-                    responseFields(fieldWithPath("result").description("결과 타입 (SUCCESS/ERROR)"),
-                            fieldWithPath("data.id").description("사용자 ID"),
-                            fieldWithPath("data.email").description("사용자 이메일"),
-                            fieldWithPath("data.name").description("사용자 이름"),
-                            fieldWithPath("data.role").description("사용자 역할"),
-                            fieldWithPath("data.createdAt").description("가입 일시"),
-                            fieldWithPath("error").description("에러 정보").optional())));
+            .andDo(document("users/me", responsePreprocessor(), responseFields(
+                    fieldWithPath("result").description("결과 타입 (SUCCESS/ERROR)"),
+                    fieldWithPath("data.id").description("사용자 ID"), fieldWithPath("data.email").description("사용자 이메일"),
+                    fieldWithPath("data.name").description("사용자 이름"), fieldWithPath("data.role").description("사용자 역할"),
+                    fieldWithPath("data.createdAt").description("가입 일시"),
+                    fieldWithPath("error").description("에러 정보").optional())));
     }
 
     @Test

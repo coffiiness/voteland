@@ -1,6 +1,5 @@
 package com.team.voteland.core.support.response;
 
-
 import com.team.voteland.support.error.ErrorMessage;
 import com.team.voteland.support.error.ErrorType;
 
