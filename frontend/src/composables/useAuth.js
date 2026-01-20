@@ -8,7 +8,7 @@ const isAuthenticated = computed(() => !!user.value)
 export function useAuth() {
   const login = async (email, password) => {
     const response = await authApi.login({ email, password })
-    const { accessToken, refreshToken, user: userData } = response.data
+    const { accessToken, refreshToken, user: userData } = response.data.data
 
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
@@ -34,8 +34,8 @@ export function useAuth() {
   const fetchUser = async () => {
     try {
       const response = await authApi.getMe()
-      user.value = response.data
-      localStorage.setItem('user', JSON.stringify(response.data))
+      user.value = response.data.data
+      localStorage.setItem('user', JSON.stringify(response.data.data))
     } catch (error) {
       logout()
     }

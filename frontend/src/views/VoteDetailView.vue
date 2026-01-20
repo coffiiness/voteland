@@ -91,7 +91,8 @@ const handleSubmit = async () => {
     await voteApi.submitVote(route.params.id, selectedOptions.value)
     router.push(`/votes/${route.params.id}/result`)
   } catch (e) {
-    error.value = e.response?.data?.message || '투표에 실패했습니다.'
+    console.error(e)
+    error.value = (e.response?.data?.message || e.message) + ' (' + (e.response?.status || 'unknown') + ')'
   } finally {
     submitting.value = false
   }
@@ -132,7 +133,7 @@ onUnmounted(() => {
     <main v-else-if="vote" class="max-w-2xl mx-auto px-4 py-8">
       <!-- Status Badge -->
       <span class="inline-block px-2.5 py-1 text-xs font-medium rounded bg-gray-900 text-white mb-4">
-        진행중
+        {{ vote.voteStatus === 'OPEN' ? '진행중' : '마감' }}
       </span>
 
       <!-- Title & Description -->
@@ -161,7 +162,7 @@ onUnmounted(() => {
 
         <div class="space-y-3">
           <button
-            v-for="option in vote.items"
+            v-for="option in vote.options"
             :key="option.id"
             type="button"
             @click="selectOption(option.id)"

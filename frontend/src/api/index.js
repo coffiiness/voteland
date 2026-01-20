@@ -64,6 +64,9 @@ export const voteApi = {
   },
   getVoteResult(id) {
     return api.get(`/votes/${id}/result`)
+  },
+  getParticipationStatus(id) {
+    return api.get(`/votes/${id}/participation-status`)
   }
 }
 
