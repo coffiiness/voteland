@@ -2,6 +2,8 @@ package com.team.voteland.storage.db.core.vote;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface VoteRecordRepository extends JpaRepository<VoteRecordEntity, Long> {
 
     long countByVoteId(Long voteId);
@@ -16,5 +18,7 @@ public interface VoteRecordRepository extends JpaRepository<VoteRecordEntity, Lo
     long countDistinctUserIdByVoteId(@org.springframework.data.repository.query.Param("voteId") Long voteId);
 
     void deleteByVoteIdAndUserId(Long voteId, Long userId);
+
+    boolean existsByVoteIdAndUserId(Long voteId, Long userId);
 
 }

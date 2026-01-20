@@ -2,12 +2,8 @@ package com.team.voteland.domain.vote.domain;
 
 import com.team.voteland.core.enums.VoteStatus;
 import com.team.voteland.core.enums.VoteType;
-import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteOptionResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteOptionResultResponse;
-import com.team.voteland.domain.vote.api.v1.response.VoteResultResponse;
+import com.team.voteland.domain.vote.api.v1.response.*;
 import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
-import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
 import com.team.voteland.storage.db.core.BaseEntity;
 import com.team.voteland.storage.db.core.vote.*;
 import com.team.voteland.support.error.CoreException;
@@ -119,6 +115,14 @@ public class VoteService {
         // 최종 상세 조회 응답 객체 생성 및 반환
         return new VoteDetailResponse(vote.id(), currentStatus, vote.title(), vote.description(), vote.createdAt(),
                 vote.deadline(), remainingTime, vote.voteType(), (int) voterCount, items);
+    }
+
+    /**
+     * 투표 참여했는지 상태 조회
+     */
+    public VoteStatusResponse getVoteStatus(Long voteId, Long userId) {
+        boolean exists = voteRecordRepository.existsByVoteIdAndUserId(voteId, userId);
+        return new VoteStatusResponse(exists);
     }
 
     // 마감 기한까지 남은 시간을 계산해 문자열로 반환
