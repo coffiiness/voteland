@@ -4,6 +4,8 @@ import com.team.voteland.core.api.controller.v1.VoteController;
 import com.team.voteland.core.enums.VoteType;
 import com.team.voteland.docs.RestDocsTest;
 import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
+import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
+import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
 import com.team.voteland.domain.vote.domain.VoteService;
 import com.team.voteland.support.security.jwt.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,11 +23,12 @@ import java.util.List;
 
 import static com.team.voteland.docs.RestDocsUtils.responsePreprocessor;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class VoteApiDocs extends RestDocsTest {
@@ -81,6 +84,31 @@ public class VoteApiDocs extends RestDocsTest {
                     fieldWithPath("options").description("투표 항목"), fieldWithPath("deadline").description("투표 마감 기간")),
                     responseFields(fieldWithPath("result").description("결과 타입 (SUCCESS/ERROR)"),
                             fieldWithPath("data").description("응답 데이터").optional(),
+                            fieldWithPath("error").description("에러 정보").optional())));
+    }
+
+    @Test
+    void 투표참여_API_문서화() throws Exception {
+        // given
+        VoteSubmitResponse response = new VoteSubmitResponse("투표가 완료되었습니다.", List.of(1L, 2L));
+
+        when(voteService.submitVote(anyLong(), anyLong(), any(VoteSubmitRequest.class))).thenReturn(response);
+        VoteSubmitRequest request = new VoteSubmitRequest(List.of(1L, 2L));
+
+        // when & then
+        mockMvc
+            .perform(post("/api/v1/votes/{voteId}/submit", 1L).contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request)))
+            .andExpect(status().isOk())
+            .andDo(document("vote-submit", responsePreprocessor(),
+
+                    pathParameters(parameterWithName("voteId").description("참여할 투표의 ID")),
+
+                    requestFields(fieldWithPath("itemIds").description("선택한 투표 항목")),
+
+                    responseFields(fieldWithPath("result").description("결과 타입"),
+                            fieldWithPath("data.message").description("투표 완료 메시지"),
+                            fieldWithPath("data.votedItems").description("투표한 항목 ID 리스트"),
                             fieldWithPath("error").description("에러 정보").optional())));
     }
 

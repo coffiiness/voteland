@@ -1,15 +1,15 @@
-= API Docs
+= API Documentation
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs
 :toc: left
-:toclevels: 3
+:toclevels: 2
 :sectlinks:
-:snippets: build/generated-snippets
+:sectnums:
+:docinfo: shared-head
 
-== Introduce
-
-This is the Core API documentation.
+== 개요 (Introduction)
+이 문서는 Core API 명세서입니다.
 
 == Users API
 
@@ -68,4 +68,16 @@ include::{snippets}/votes/request-fields.adoc[]
 include::{snippets}/votes/http-response.adoc[]
 ==== Response Fields
 include::{snippets}/votes/response-fields.adoc[]
+
+=== 투표 참여
+==== Curl Request
+include::{snippets}/vote-submit/curl-request.adoc[]
+==== Path Parameters
+include::{snippets}/vote-submit/path-parameters.adoc[]
+==== Request Fields
+include::{snippets}/vote-submit/request-fields.adoc[]
+==== Http Response
+include::{snippets}/vote-submit/http-response.adoc[]
+==== Response Fields
+include::{snippets}/vote-submit/response-fields.adoc[]
 
