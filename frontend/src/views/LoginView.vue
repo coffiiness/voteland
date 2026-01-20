@@ -30,7 +30,7 @@ const handleSubmit = async () => {
   <div class="min-h-screen flex items-center justify-center bg-white">
     <div class="w-full max-w-md px-8">
       <div class="text-center mb-10">
-        <h1 class="text-2xl font-bold text-gray-900">CI/CD 테스트입니다.</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Voteland</h1>
         <p class="mt-2 text-gray-500">서비스를 이용하려면 로그인하세요</p>
       </div>
 
