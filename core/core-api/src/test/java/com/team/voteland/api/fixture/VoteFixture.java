@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.voteland.core.enums.VoteType;
 import com.team.voteland.core.support.response.ApiResponse;
 import com.team.voteland.domain.vote.api.v1.request.CreateVoteRequest;
+import com.team.voteland.domain.vote.api.v1.request.VoteSubmitRequest;
+import com.team.voteland.domain.vote.api.v1.response.VoteDetailResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteInfoResponse;
+import com.team.voteland.domain.vote.api.v1.response.VoteSubmitResponse;
 import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
@@ -60,4 +64,37 @@ public record VoteFixture(BaseFixture base) {
         return base.post("/api/v1/votes", request, token, Void.class);
     }
 
+    public Long createVoteAndGetId(String token) {
+        CreateVoteRequest request = new CreateVoteRequest(
+                randomTitle(),
+                randomDescription(),
+                randomVoteType(),
+                randomOptions(),
+                randomDeadline());
+        base().post("/api/v1/votes", request, token, Void.class);
+
+        ApiResponse<VoteInfoResponse[]> listResponse = base().get("/api/v1/votes", token, VoteInfoResponse[].class);
+        return listResponse.getData()[0].id();
+    }
+
+    public ApiResponse<VoteInfoResponse[]> getVoteInfos() {
+        return base().get("/api/v1/votes", VoteInfoResponse[].class);
+    }
+
+    public ApiResponse<VoteInfoResponse[]> getVoteInfos(String token) {
+        return base().get("/api/v1/votes", token, VoteInfoResponse[].class);
+    }
+
+    public ApiResponse<VoteDetailResponse> getVoteDetail(Long voteId) {
+        return base().get("/api/v1/votes/" + voteId, VoteDetailResponse.class);
+    }
+
+    public ApiResponse<VoteDetailResponse> getVoteDetail(Long voteId, String token) {
+        return base().get("/api/v1/votes/" + voteId, token, VoteDetailResponse.class);
+    }
+
+    public ApiResponse<VoteSubmitResponse> submitVote(Long voteId, List<Long> itemIds, String token) {
+        VoteSubmitRequest request = new VoteSubmitRequest(itemIds);
+        return base.post("/api/v1/votes/" + voteId + "/submit", request, token, VoteSubmitResponse.class);
+    }
 }
