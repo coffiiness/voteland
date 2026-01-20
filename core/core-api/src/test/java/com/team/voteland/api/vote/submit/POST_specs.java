@@ -161,8 +161,9 @@ public class POST_specs {
         Long optionId = options.get(0).getId();
 
         VoteSubmitRequest request = new VoteSubmitRequest(List.of(optionId));
+        Long nonExistentVoteId = Long.MAX_VALUE;
         ApiResponse<VoteSubmitResponse> response = voteFixture.base()
-            .post("/api/v1/votes/999999/submit", request, token, VoteSubmitResponse.class);
+            .post("/api/v1/votes/" + nonExistentVoteId + "/submit", request, token, VoteSubmitResponse.class);
 
         assertThat(response.getResult()).isEqualTo(ResultType.ERROR);
     }
@@ -265,7 +266,7 @@ public class POST_specs {
             .orElseThrow();
         Long voteId = vote.getId();
 
-        VoteSubmitRequest request = new VoteSubmitRequest(List.of(999999L));
+        VoteSubmitRequest request = new VoteSubmitRequest(List.of(Long.MAX_VALUE));
         ApiResponse<VoteSubmitResponse> response = voteFixture.base()
             .post("/api/v1/votes/" + voteId + "/submit", request, token, VoteSubmitResponse.class);
 
