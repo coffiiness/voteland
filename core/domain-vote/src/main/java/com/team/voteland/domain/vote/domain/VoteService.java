@@ -94,7 +94,7 @@ public class VoteService {
     // 투표 정보 조회 및 도메인 객체(Vote)로 변환
     public VoteDetailResponse getVoteDetail(Long voteId) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new IllegalArgumentException("Vote not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Vote not found"));
         Vote vote = Vote.from(voteEntity);
 
         // 투표 옵션 조회
@@ -113,8 +113,8 @@ public class VoteService {
 
         // VoteOptionEntity를 DTO로 변환
         List<VoteOptionResponse> items = voteOptions.stream()
-                .map(option -> new VoteOptionResponse(option.getId(), option.getContent()))
-                .toList();
+            .map(option -> new VoteOptionResponse(option.getId(), option.getContent()))
+            .toList();
 
         // 최종 상세 조회 응답 객체 생성 및 반환
         return new VoteDetailResponse(vote.id(), currentStatus, vote.title(), vote.description(), vote.createdAt(),
@@ -136,7 +136,8 @@ public class VoteService {
         // 3. formating: 1시간 이상 남았으면 '분'까지만, 1시간 미만이면 '초'까지 표시
         if (hours > 0) {
             return String.format("%d시간 %d분 남음", hours, minutes);
-        } else {
+        }
+        else {
             return String.format("%d분 %d초 남음", minutes, seconds);
         }
     }
@@ -147,7 +148,7 @@ public class VoteService {
     @Transactional(readOnly = true)
     public VoteResultResponse getVoteResult(Long voteId) {
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
         Vote vote = Vote.from(voteEntity);
 
         // 옵션 목록 조회
@@ -186,8 +187,8 @@ public class VoteService {
 
         // 마지막 업데이트 시간
         LocalDateTime lastUpdatedAt = voteRecordRepository.findTopByVoteIdOrderByCreatedAtDesc(voteId)
-                .map(BaseEntity::getCreatedAt)
-                .orElse(vote.createdAt());
+            .map(BaseEntity::getCreatedAt)
+            .orElse(vote.createdAt());
 
         // 현재 상태 계산
         LocalDateTime now = LocalDateTime.now();
@@ -201,7 +202,7 @@ public class VoteService {
     public VoteSubmitResponse submitVote(Long voteId, Long userId, VoteSubmitRequest request) {
         // 1. 투표 조회 및 유효성 검사
         VoteEntity voteEntity = voteRepository.findById(voteId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
         Vote vote = Vote.from(voteEntity);
 
         if (LocalDateTime.now().isAfter(vote.deadline())) {
@@ -213,8 +214,7 @@ public class VoteService {
         if (!existingRecords.isEmpty()) {
             for (VoteRecordEntity record : existingRecords) {
                 // 기존 옵션 득표수 감소 (옵션이 삭제되었을 수도 있으므로 안전하게 처리)
-                voteOptionRepository.findById(record.getVoteOptionId())
-                        .ifPresent(VoteOptionEntity::decreaseVoteCount);
+                voteOptionRepository.findById(record.getVoteOptionId()).ifPresent(VoteOptionEntity::decreaseVoteCount);
             }
             // 기존 기록 삭제
             voteRecordRepository.deleteAll(existingRecords);
@@ -236,7 +236,7 @@ public class VoteService {
         // 4. 새로운 투표 기록 저장 및 득표수 증가
         for (Long itemId : itemIds) {
             VoteOptionEntity option = voteOptionRepository.findById(itemId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + itemId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + itemId));
 
             if (!option.getVoteId().equals(voteId)) {
                 throw new IllegalArgumentException("해당 투표의 옵션이 아닙니다.");
