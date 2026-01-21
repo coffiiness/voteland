@@ -11,4 +11,4 @@ scrape_configs:
     metrics_path: "/actuator/prometheus"
     static_configs:
       - targets:
-          - "core-api:8080"
+          - "voteland-api:8080"
