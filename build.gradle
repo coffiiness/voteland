@@ -11,9 +11,11 @@ plugins {
 apply from: 'lint.gradle'
 
 allprojects {
-    group = "${projectGroup}"
-    version = "${applicationVersion}"
     sourceCompatibility = project.javaVersion
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 
     repositories {
         mavenCentral()
@@ -45,6 +47,7 @@ subprojects {
     jar.enabled = true
 
     test {
+        systemProperty "file.encoding", "UTF-8"
         useJUnitPlatform {
             excludeTags('develop', 'restdocs')
         }
