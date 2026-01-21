@@ -41,10 +41,10 @@ public class GET_specs {
     void 투표_목록을_전체_조회한다(@Autowired UserFixture userFixture, @Autowired VoteFixture voteFixture) {
         // Arrange
         String token = userFixture.createUserAndGetToken();
-        voteFixture.createVote(voteFixture.randomTitle(), voteFixture.randomDescription(),
-                voteFixture.randomVoteType(), voteFixture.randomOptions(), voteFixture.randomDeadline(), token);
-        voteFixture.createVote(voteFixture.randomTitle(), voteFixture.randomDescription(),
-                voteFixture.randomVoteType(), voteFixture.randomOptions(), voteFixture.randomDeadline(), token);
+        voteFixture.createVote(voteFixture.randomTitle(), voteFixture.randomDescription(), voteFixture.randomVoteType(),
+                voteFixture.randomOptions(), voteFixture.randomDeadline(), token);
+        voteFixture.createVote(voteFixture.randomTitle(), voteFixture.randomDescription(), voteFixture.randomVoteType(),
+                voteFixture.randomOptions(), voteFixture.randomDeadline(), token);
 
         // Act
         ApiResponse<VoteInfoResponse[]> response = voteFixture.getVoteInfos(token);
@@ -61,8 +61,8 @@ public class GET_specs {
         String creatorToken = userFixture.createUserAndGetToken();
         String title = voteFixture.randomTitle();
         List<String> options = List.of("option1", "option2");
-        voteFixture.createVote(title, voteFixture.randomDescription(),
-                voteFixture.randomVoteType(), options, LocalDateTime.now().plusDays(1), creatorToken);
+        voteFixture.createVote(title, voteFixture.randomDescription(), voteFixture.randomVoteType(), options,
+                LocalDateTime.now().plusDays(1), creatorToken);
 
         // 첫 번째 조회 (참여자 0명)
         ApiResponse<VoteInfoResponse[]> initialResponse = voteFixture.getVoteInfos(creatorToken);
@@ -113,7 +113,7 @@ public class GET_specs {
         VoteType type = VoteType.SINGLE;
         List<String> options = List.of("A", "B");
         LocalDateTime deadline = LocalDateTime.now().plusDays(2);
-        
+
         voteFixture.createVote(title, description, type, options, deadline, token);
 
         // Act
@@ -134,11 +134,12 @@ public class GET_specs {
         // Arrange
         String token = userFixture.createUserAndGetToken();
         String title = "Expired Vote";
-        voteFixture.createVote(title, "desc", VoteType.SINGLE, List.of("1", "2"), LocalDateTime.now().plusSeconds(5), token);
+        voteFixture.createVote(title, "desc", VoteType.SINGLE, List.of("1", "2"), LocalDateTime.now().plusSeconds(5),
+                token);
 
         // Act
         ApiResponse<VoteInfoResponse[]> response = voteFixture.getVoteInfos(token);
-        
+
         // Assert
         VoteInfoResponse targetVote = findVoteByTitle(response.getData(), title);
         assertThat(targetVote).isNotNull();
@@ -154,4 +155,5 @@ public class GET_specs {
         }
         return null;
     }
+
 }

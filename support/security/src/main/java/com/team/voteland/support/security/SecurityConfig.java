@@ -34,29 +34,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/users/signup", "/api/v1/users/login",
-                        "/actuator/**", "/health", "/h2-console/**", "/docs/**")
-                        .permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/votes",
-                                "/api/v1/votes/{voteId}", "/api/v1/votes/{voteId}/result")
-                        .authenticated() // These endpoints now require authentication
-                        .anyRequest()
-                        .authenticated())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter()
-                            .write("{\"result\":\"ERROR\",\"data\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"Unauthorized\",\"data\":null}}");
-                }).accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(403);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter()
-                            .write("{\"result\":\"ERROR\",\"data\":null,\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Forbidden\",\"data\":null}}");
-                }))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/users/signup", "/api/v1/users/login")
+                .permitAll()
+                .requestMatchers("/actuator/**", "/health", "/h2-console/**", "/docs/**")
+                .permitAll()
+                .anyRequest()
+                .authenticated())
+            .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(401);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter()
+                    .write("{\"result\":\"ERROR\",\"data\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"Unauthorized\",\"data\":null}}");
+            }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.setStatus(403);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter()
+                    .write("{\"result\":\"ERROR\",\"data\":null,\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Forbidden\",\"data\":null}}");
+            }))
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
     }
 
     @Bean

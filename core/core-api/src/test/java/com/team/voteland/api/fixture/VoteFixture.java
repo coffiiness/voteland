@@ -65,12 +65,8 @@ public record VoteFixture(BaseFixture base) {
     }
 
     public Long createVoteAndGetId(String token) {
-        CreateVoteRequest request = new CreateVoteRequest(
-                randomTitle(),
-                randomDescription(),
-                randomVoteType(),
-                randomOptions(),
-                randomDeadline());
+        CreateVoteRequest request = new CreateVoteRequest(randomTitle(), randomDescription(), randomVoteType(),
+                randomOptions(), randomDeadline());
         base().post("/api/v1/votes", request, token, Void.class);
 
         ApiResponse<VoteInfoResponse[]> listResponse = base().get("/api/v1/votes", token, VoteInfoResponse[].class);
